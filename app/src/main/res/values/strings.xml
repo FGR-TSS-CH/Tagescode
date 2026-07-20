@@ -24,7 +24,7 @@
 </string>
 
 <string name="build_info_format">
-    Version %1$s · Build %2$s · %3$s
+    Version %1$s · %2$s
 </string>
 
 </resources>
