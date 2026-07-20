@@ -20,12 +20,24 @@ public class MainActivity extends Activity {
 
     private TextView codeView;
     private TextView dateView;
+
+    private TextView yesterdayCodeView;
+    private TextView code2000View;
+    private TextView code2001View;
+    private TextView code2006View;
+
     private Button otherDateButton;
     private Button todayButton;
 
-    private final SimpleDateFormat dateFormat =
+    private final SimpleDateFormat longDateFormat =
             new SimpleDateFormat(
                     "EEEE, d. MMMM yyyy",
+                    Locale.GERMANY
+            );
+
+    private final SimpleDateFormat shortDateFormat =
+            new SimpleDateFormat(
+                    "dd.MM.yyyy",
                     Locale.GERMANY
             );
 
@@ -36,8 +48,22 @@ public class MainActivity extends Activity {
 
         codeView = findViewById(R.id.codeView);
         dateView = findViewById(R.id.dateView);
+
+        yesterdayCodeView =
+                findViewById(R.id.yesterdayCodeView);
+
+        code2000View =
+                findViewById(R.id.code2000View);
+
+        code2001View =
+                findViewById(R.id.code2001View);
+
+        code2006View =
+                findViewById(R.id.code2006View);
+
         otherDateButton =
                 findViewById(R.id.otherDateButton);
+
         todayButton =
                 findViewById(R.id.todayButton);
 
@@ -49,12 +75,7 @@ public class MainActivity extends Activity {
                 view -> showToday()
         );
 
-        /*
-         * Fordert beim ersten Start einmalig die nötige
-         * Speicherberechtigung an.
-         */
         requestFileAccessIfNeeded();
-
         showToday();
     }
 
@@ -62,20 +83,12 @@ public class MainActivity extends Activity {
     protected void onResume() {
         super.onResume();
 
-        /*
-         * Beim Öffnen oder Zurückkehren in die App wird
-         * PwD.txt erneut eingelesen.
-         */
         showToday();
         TagescodeWidget.updateAllWidgets(this);
     }
 
     @Override
     protected void onPause() {
-        /*
-         * Beim Verlassen der App wird wieder auf den
-         * heutigen Tagescode zurückgesetzt.
-         */
         showToday();
         TagescodeWidget.updateAllWidgets(this);
 
@@ -111,12 +124,14 @@ public class MainActivity extends Activity {
 
         dateView.setText(
                 capitalise(
-                        dateFormat.format(today.getTime())
+                        longDateFormat.format(today.getTime())
                 )
         );
 
         todayButton.setVisibility(View.GONE);
         otherDateButton.setVisibility(View.VISIBLE);
+
+        updateAdditionalCodes();
     }
 
     private void showSelectedDate(
@@ -145,7 +160,7 @@ public class MainActivity extends Activity {
 
         dateView.setText(
                 capitalise(
-                        dateFormat.format(
+                        longDateFormat.format(
                                 selectedDate.getTime()
                         )
                 )
@@ -153,6 +168,71 @@ public class MainActivity extends Activity {
 
         otherDateButton.setVisibility(View.VISIBLE);
         todayButton.setVisibility(View.VISIBLE);
+
+        updateAdditionalCodes();
+    }
+
+    private void updateAdditionalCodes() {
+        Calendar yesterday = Calendar.getInstance();
+        yesterday.add(Calendar.DAY_OF_YEAR, -1);
+
+        String yesterdayDate =
+                shortDateFormat.format(yesterday.getTime());
+
+        String yesterdayCode =
+                CodeRepository.getCodeForDate(
+                        this,
+                        yesterday.get(Calendar.YEAR),
+                        yesterday.get(Calendar.MONTH),
+                        yesterday.get(Calendar.DAY_OF_MONTH)
+                );
+
+        yesterdayCodeView.setText(
+                getString(
+                        R.string.yesterday_code_format,
+                        yesterdayDate,
+                        yesterdayCode
+                )
+        );
+
+        code2000View.setText(
+                getString(
+                        R.string.fixed_code_format,
+                        "01.01.2000",
+                        CodeRepository.getCodeForDate(
+                                this,
+                                2000,
+                                Calendar.JANUARY,
+                                1
+                        )
+                )
+        );
+
+        code2001View.setText(
+                getString(
+                        R.string.fixed_code_format,
+                        "01.01.2001",
+                        CodeRepository.getCodeForDate(
+                                this,
+                                2001,
+                                Calendar.JANUARY,
+                                1
+                        )
+                )
+        );
+
+        code2006View.setText(
+                getString(
+                        R.string.fixed_code_format,
+                        "01.01.2006",
+                        CodeRepository.getCodeForDate(
+                                this,
+                                2006,
+                                Calendar.JANUARY,
+                                1
+                        )
+                )
+        );
     }
 
     private String capitalise(String text) {
@@ -200,6 +280,9 @@ public class MainActivity extends Activity {
                     );
 
             startActivity(generalPermissionIntent);
+        }
+    }
+}
         }
     }
 }
