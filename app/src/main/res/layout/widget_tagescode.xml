@@ -6,19 +6,23 @@
     android:background="@drawable/widget_background"
     android:gravity="center"
     android:orientation="vertical"
-    android:padding="12dp">
+    android:padding="4dp">
 
     <TextView
         android:id="@+id/widgetCode"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:fontFamily="sans-serif-medium"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:autoSizeMaxTextSize="52sp"
+        android:autoSizeMinTextSize="28sp"
+        android:autoSizeStepGranularity="2sp"
+        android:autoSizeTextType="uniform"
+        android:fontFamily="sans-serif"
         android:gravity="center"
         android:includeFontPadding="false"
-        android:letterSpacing="0.08"
+        android:letterSpacing="0.06"
         android:maxLines="1"
         android:text="------"
         android:textColor="@color/widget_text"
-        android:textSize="34sp" />
+        android:textStyle="bold" />
 
 </LinearLayout>
