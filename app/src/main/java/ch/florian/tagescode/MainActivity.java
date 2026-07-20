@@ -27,7 +27,7 @@ public class MainActivity extends Activity {
     private TextView code2006View;
     private TextView buildInfoView;
 
-    private Button otherDateButton;
+    private View otherDateButton;
     private Button todayButton;
 
     private final SimpleDateFormat longDateFormat =
