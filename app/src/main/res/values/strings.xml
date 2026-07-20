@@ -15,5 +15,6 @@
 
     <string name="yesterday_code_format">Gestern (%1$s): %2$s</string>
     <string name="fixed_code_format">%1$s: %2$s</string>
+    <string name="select_date_clean">Datum auswählen</string>
 
 </resources>
