@@ -62,21 +62,35 @@
 
         </LinearLayout>
 
-        <Button
-            android:id="@+id/otherDateButton"
-            android:layout_width="match_parent"
-            android:layout_height="56dp"
-            android:layout_marginTop="20dp"
-            android:background="@drawable/button_primary"
-            android:drawableStart="@drawable/ic_calendar"
-            android:drawablePadding="10dp"
-            android:drawableTint="@color/accent_text"
-            android:fontFamily="sans-serif-medium"
-            android:gravity="center"
-            android:text="@string/select_date_clean"
-            android:textAllCaps="false"
-            android:textColor="@color/accent_text"
-            android:textSize="17sp" />
+      <LinearLayout
+    android:id="@+id/otherDateButton"
+    android:layout_width="match_parent"
+    android:layout_height="56dp"
+    android:layout_marginTop="20dp"
+    android:background="@drawable/button_primary"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?android:attr/selectableItemBackground"
+    android:gravity="center"
+    android:orientation="horizontal">
+
+    <ImageView
+        android:layout_width="23dp"
+        android:layout_height="23dp"
+        android:contentDescription="@null"
+        android:src="@drawable/ic_calendar"
+        android:tint="@color/accent_text" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="11dp"
+        android:fontFamily="sans-serif-medium"
+        android:text="@string/select_date_clean"
+        android:textColor="@color/accent_text"
+        android:textSize="17sp" />
+
+</LinearLayout>
 
         <Button
             android:id="@+id/todayButton"
