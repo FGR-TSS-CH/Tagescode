@@ -20,19 +20,33 @@ import java.util.regex.Pattern;
 
 final class CodeRepository {
 
+    /*
+     * Datei, die mit der APK mitgeliefert wird.
+     * Sie wird verwendet, falls die externe PwD.txt fehlt
+     * oder nicht gelesen werden kann.
+     */
     private static final String FALLBACK_ASSET_FILE = "tagescodes.txt";
 
     /*
+     * Fester Speicherort:
+     * Interner Speicher/DCIM/Videojet/PwD/PwD.txt
+     */
+    private static final String EXTERNAL_FOLDER = "Videojet/PwD";
+    private static final String EXTERNAL_FILE = "PwD.txt";
+
+    /*
      * Unterstützte Beispiele:
+     *
      * 07/20/2026 302745
      * 20.07.2026;302745
      * 2026-07-20 302745
+     * 20/07/2026 = 302745
      */
-    private static final Pattern ENTRY = Pattern.compile(
+    private static final Pattern ENTRY_PATTERN = Pattern.compile(
             "(\\d{1,4}[./-]\\d{1,2}[./-]\\d{1,4})\\D+(\\d{6})\\b"
     );
 
-    private static final String[] DATE_FORMATS = {
+    private static final String[] SUPPORTED_DATE_FORMATS = {
             "MM/dd/yyyy",
             "dd.MM.yyyy",
             "yyyy-MM-dd",
@@ -41,6 +55,7 @@ final class CodeRepository {
     };
 
     private CodeRepository() {
+        // Keine Instanzen dieser Klasse nötig.
     }
 
     static String getCodeForToday(Context context) {
@@ -60,8 +75,11 @@ final class CodeRepository {
         return getCodeForDate(context, calendar.getTime());
     }
 
-    private static String getCodeForDate(Context context, Date requestedDate) {
-        String requested = new SimpleDateFormat(
+    private static String getCodeForDate(
+            Context context,
+            Date requestedDate
+    ) {
+        String requestedDateString = new SimpleDateFormat(
                 "yyyy-MM-dd",
                 Locale.US
         ).format(requestedDate);
@@ -70,18 +88,19 @@ final class CodeRepository {
             String line;
 
             while ((line = reader.readLine()) != null) {
-                Matcher matcher = ENTRY.matcher(line);
+                Matcher matcher = ENTRY_PATTERN.matcher(line);
 
                 while (matcher.find()) {
-                    String date = normalizeDate(matcher.group(1));
+                    String normalizedDate =
+                            normalizeDate(matcher.group(1));
 
-                    if (requested.equals(date)) {
+                    if (requestedDateString.equals(normalizedDate)) {
                         return matcher.group(2);
                     }
                 }
             }
-        } catch (Exception ignored) {
-            // Bei fehlender oder unlesbarer Datei erscheint der Platzhalter.
+        } catch (IOException | SecurityException ignored) {
+            // Bei einem Fehler wird der Platzhalter angezeigt.
         }
 
         return "------";
@@ -94,36 +113,48 @@ final class CodeRepository {
 
         /*
          * Die externe PwD.txt wird bei jedem Aufruf neu geöffnet.
-         * Wird sie auf dem Handy ersetzt, verwendet die App automatisch
-         * den neuen Inhalt.
+         * Wird die Datei ersetzt, verwendet die App automatisch
+         * die neue Version.
          */
-        if (externalFile.isFile()) {
+        if (externalFile.isFile() && externalFile.length() > 0) {
             try {
-                return createReader(new FileInputStream(externalFile));
+                return createReader(
+                        new FileInputStream(externalFile)
+                );
             } catch (IOException | SecurityException ignored) {
-                // Ohne Berechtigung oder bei einem Dateifehler wird
-                // die mitgelieferte Datei verwendet.
+                /*
+                 * Falls die externe Datei nicht gelesen werden kann,
+                 * wird die mitgelieferte Datei verwendet.
+                 */
             }
         }
 
-        InputStream fallback =
+        InputStream fallbackInputStream =
                 context.getAssets().open(FALLBACK_ASSET_FILE);
 
-        return createReader(fallback);
+        return createReader(fallbackInputStream);
     }
 
     private static File getExternalCodeFile() {
-        File dcim = Environment.getExternalStoragePublicDirectory(
-                Environment.DIRECTORY_DCIM
+        File dcimFolder =
+                Environment.getExternalStoragePublicDirectory(
+                        Environment.DIRECTORY_DCIM
+                );
+
+        File pwdFolder = new File(
+                dcimFolder,
+                EXTERNAL_FOLDER
         );
 
         return new File(
-                dcim,
-                "Videojet/PwD/PwD.txt"
+                pwdFolder,
+                EXTERNAL_FILE
         );
     }
 
-    private static BufferedReader createReader(InputStream inputStream) {
+    private static BufferedReader createReader(
+            InputStream inputStream
+    ) {
         return new BufferedReader(
                 new InputStreamReader(
                         inputStream,
@@ -132,19 +163,27 @@ final class CodeRepository {
         );
     }
 
-    private static String normalizeDate(String value) {
-        for (String pattern : DATE_FORMATS) {
+    private static String normalizeDate(String inputDate) {
+        if (inputDate == null || inputDate.isEmpty()) {
+            return null;
+        }
+
+        for (String pattern : SUPPORTED_DATE_FORMATS) {
             SimpleDateFormat parser =
                     new SimpleDateFormat(pattern, Locale.US);
 
             parser.setLenient(false);
 
-            ParsePosition position = new ParsePosition(0);
-            Date parsedDate = parser.parse(value, position);
+            ParsePosition parsePosition =
+                    new ParsePosition(0);
+
+            Date parsedDate =
+                    parser.parse(inputDate, parsePosition);
 
             if (
                     parsedDate != null
-                            && position.getIndex() == value.length()
+                            && parsePosition.getIndex()
+                            == inputDate.length()
             ) {
                 return new SimpleDateFormat(
                         "yyyy-MM-dd",
