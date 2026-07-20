@@ -1,9 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="screen_background">#FF121212</color>
-    <color name="text_primary">#FFF1F1F1</color>
-    <color name="text_secondary">#FFB0B0B0</color>
-    <color name="widget_background">#FF1E1E1E</color>
-    <color name="widget_text">#FFF1F1F1</color>
-    <color name="window_background">#FF121212</color>
-    <color name="dialog_background">#FF1E1E1E</color>
+
+    <color name="screen_background">#FF0F1114</color>
+    <color name="window_background">#FF0F1114</color>
+
+    <color name="text_primary">#FFF4F6F8</color>
+    <color name="text_secondary">#FFAAB2BC</color>
+
+    <color name="surface">#FF191C21</color>
+    <color name="surface_secondary">#FF23272D</color>
+    <color name="surface_stroke">#FF343A43</color>
+
+    <color name="accent">#FF258FE3</color>
+    <color name="accent_pressed">#FF1474BE</color>
+    <color name="accent_text">#FFFFFFFF</color>
+
+    <color name="widget_background">#FF1D1D1F</color>
+    <color name="widget_text">#FFFFFFFF</color>
+    <color name="dialog_background">#FF191C21</color>
+
 </resources>
