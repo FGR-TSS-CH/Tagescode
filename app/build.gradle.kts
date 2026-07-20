@@ -71,3 +71,6 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 }
+dependencies {
+    implementation("androidx.documentfile:documentfile:1.1.0")
+}
