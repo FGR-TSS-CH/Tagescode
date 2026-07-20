@@ -19,5 +19,6 @@
     <color name="widget_text">#FFFFFFFF</color>
     <color name="dialog_background">#FFFFFFFF</color>
     <color name="launcher_background">#111820</color>
+    <color name="launcher_background">#FFFFFFFF</color>
 
 </resources>
