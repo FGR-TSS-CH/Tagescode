@@ -12,10 +12,14 @@ import java.util.Calendar;
 import java.util.Locale;
 
 public class MainActivity extends Activity {
+
     private TextView codeView;
     private TextView dateView;
     private Button otherDateButton;
     private Button todayButton;
+
+    private final SimpleDateFormat dateFormat =
+            new SimpleDateFormat("EEEE, d. MMMM yyyy", Locale.GERMANY);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,13 +40,11 @@ public class MainActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-        // Beim erneuten Öffnen wird immer wieder der heutige Tagescode angezeigt.
         showToday();
     }
 
     @Override
     protected void onPause() {
-        // Eine manuelle Auswahl wird nicht gespeichert.
         showToday();
         TagescodeWidget.updateAllWidgets(this);
         super.onPause();
@@ -50,20 +52,25 @@ public class MainActivity extends Activity {
 
     private void openDatePicker() {
         Calendar today = Calendar.getInstance();
+
         DatePickerDialog dialog = new DatePickerDialog(
                 this,
-                (view, year, month, dayOfMonth) -> showSelectedDate(year, month, dayOfMonth),
+                (view, year, month, dayOfMonth) ->
+                        showSelectedDate(year, month, dayOfMonth),
                 today.get(Calendar.YEAR),
                 today.get(Calendar.MONTH),
                 today.get(Calendar.DAY_OF_MONTH)
         );
+
         dialog.show();
     }
 
     private void showToday() {
         Calendar today = Calendar.getInstance();
+
         codeView.setText(CodeRepository.getCodeForToday(this));
-        dateView.setText(R.string.today);
+        dateView.setText(capitalise(dateFormat.format(today.getTime())));
+
         todayButton.setVisibility(View.GONE);
         otherDateButton.setVisibility(View.VISIBLE);
     }
@@ -73,9 +80,22 @@ public class MainActivity extends Activity {
         selected.clear();
         selected.set(year, month, dayOfMonth);
 
-        codeView.setText(CodeRepository.getCodeForDate(this, year, month, dayOfMonth));
-        dateView.setText(new SimpleDateFormat("dd.MM.yyyy", Locale.GERMANY).format(selected.getTime()));
-        otherDateButton.setVisibility(View.GONE);
+        codeView.setText(
+                CodeRepository.getCodeForDate(this, year, month, dayOfMonth)
+        );
+
+        dateView.setText(capitalise(dateFormat.format(selected.getTime())));
+
+        otherDateButton.setVisibility(View.VISIBLE);
         todayButton.setVisibility(View.VISIBLE);
+    }
+
+    private String capitalise(String text) {
+        if (text == null || text.isEmpty()) {
+            return text;
+        }
+
+        return text.substring(0, 1).toUpperCase(Locale.GERMANY)
+                + text.substring(1);
     }
 }
