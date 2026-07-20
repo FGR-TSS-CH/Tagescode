@@ -17,4 +17,14 @@
     <string name="fixed_code_format">%1$s: %2$s</string>
     <string name="select_date_clean">Datum auswählen</string>
 
+    <string name="developed_by">Videojet Schweiz · FGR</string>
+
+<string name="swiss_badge_description">
+    Schweizerflagge
+</string>
+
+<string name="build_info_format">
+    Version %1$s · Build %2$s · %3$s
+</string>
+
 </resources>
