@@ -15,7 +15,7 @@ val automaticBuildDate =
     ZonedDateTime.now(ZoneId.of("Europe/Zurich"))
         .format(
             DateTimeFormatter.ofPattern(
-                "dd.MM.yyyy HH:mm",
+                "MMMM yyyy",
                 Locale.GERMANY
             )
         )
@@ -30,7 +30,6 @@ android {
 
     defaultConfig {
         applicationId = "ch.florian.tagescode"
-
         minSdk = 26
         targetSdk = 35
 
@@ -53,12 +52,15 @@ android {
     buildFeatures {
         buildConfig = true
     }
-}
+
     buildTypes {
         release {
             isMinifyEnabled = false
+
             proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
+                getDefaultProguardFile(
+                    "proguard-android-optimize.txt"
+                ),
                 "proguard-rules.pro"
             )
         }
