@@ -1,11 +1,8 @@
 package ch.florian.tagescode;
 
 import android.content.Context;
-import android.os.Environment;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -20,31 +17,15 @@ import java.util.regex.Pattern;
 
 final class CodeRepository {
 
-    /*
-     * Datei, die mit der APK mitgeliefert wird.
-     * Sie wird verwendet, falls die externe PwD.txt fehlt
-     * oder nicht gelesen werden kann.
-     */
-    private static final String FALLBACK_ASSET_FILE = "tagescodes.txt";
+    private static final String FALLBACK_ASSET_FILE =
+            "tagescodes.txt";
 
-    /*
-     * Fester Speicherort:
-     * Interner Speicher/DCIM/Videojet/PwD/PwD.txt
-     */
-    private static final String EXTERNAL_FOLDER = "Videojet/PwD";
-    private static final String EXTERNAL_FILE = "PwD.txt";
-
-    /*
-     * Unterstützte Beispiele:
-     *
-     * 07/20/2026 302745
-     * 20.07.2026;302745
-     * 2026-07-20 302745
-     * 20/07/2026 = 302745
-     */
-    private static final Pattern ENTRY_PATTERN = Pattern.compile(
-            "(\\d{1,4}[./-]\\d{1,2}[./-]\\d{1,4})\\D+(\\d{6})\\b"
-    );
+    private static final Pattern ENTRY_PATTERN =
+            Pattern.compile(
+                    "(\\d{1,4}[./-]\\d{1,2}[./-]\\d{1,4})"
+                            + "\\D+"
+                            + "(\\d{6})\\b"
+            );
 
     private static final String[] SUPPORTED_DATE_FORMATS = {
             "MM/dd/yyyy",
@@ -55,11 +36,14 @@ final class CodeRepository {
     };
 
     private CodeRepository() {
-        // Keine Instanzen dieser Klasse nötig.
+        // Keine Instanz erforderlich.
     }
 
     static String getCodeForToday(Context context) {
-        return getCodeForDate(context, new Date());
+        return getCodeForDate(
+                context,
+                new Date()
+        );
     }
 
     static String getCodeForDate(
@@ -68,87 +52,85 @@ final class CodeRepository {
             int month,
             int dayOfMonth
     ) {
-        Calendar calendar = Calendar.getInstance();
-        calendar.clear();
-        calendar.set(year, month, dayOfMonth);
+        Calendar calendar =
+                Calendar.getInstance();
 
-        return getCodeForDate(context, calendar.getTime());
+        calendar.clear();
+
+        calendar.set(
+                year,
+                month,
+                dayOfMonth
+        );
+
+        return getCodeForDate(
+                context,
+                calendar.getTime()
+        );
     }
 
     private static String getCodeForDate(
             Context context,
             Date requestedDate
     ) {
-        String requestedDateString = new SimpleDateFormat(
-                "yyyy-MM-dd",
-                Locale.US
-        ).format(requestedDate);
+        String requestedDateString =
+                new SimpleDateFormat(
+                        "yyyy-MM-dd",
+                        Locale.US
+                ).format(requestedDate);
 
-        try (BufferedReader reader = openCodeReader(context)) {
+        try (
+                BufferedReader reader =
+                        openCodeReader(context)
+        ) {
             String line;
 
             while ((line = reader.readLine()) != null) {
-                Matcher matcher = ENTRY_PATTERN.matcher(line);
+                Matcher matcher =
+                        ENTRY_PATTERN.matcher(line);
 
                 while (matcher.find()) {
                     String normalizedDate =
-                            normalizeDate(matcher.group(1));
+                            normalizeDate(
+                                    matcher.group(1)
+                            );
 
-                    if (requestedDateString.equals(normalizedDate)) {
+                    if (
+                            requestedDateString.equals(
+                                    normalizedDate
+                            )
+                    ) {
                         return matcher.group(2);
                     }
                 }
             }
-        } catch (IOException | SecurityException ignored) {
+
+        } catch (Exception ignored) {
             // Bei einem Fehler wird der Platzhalter angezeigt.
         }
 
         return "------";
     }
 
-    private static BufferedReader openCodeReader(Context context)
-            throws IOException {
+    private static BufferedReader openCodeReader(
+            Context context
+    ) throws IOException {
 
-        File externalFile = getExternalCodeFile();
+        InputStream externalInputStream =
+                CodeFolderAccess.openCodeFile(context);
 
-        /*
-         * Die externe PwD.txt wird bei jedem Aufruf neu geöffnet.
-         * Wird die Datei ersetzt, verwendet die App automatisch
-         * die neue Version.
-         */
-        if (externalFile.isFile() && externalFile.length() > 0) {
-            try {
-                return createReader(
-                        new FileInputStream(externalFile)
-                );
-            } catch (IOException | SecurityException ignored) {
-                /*
-                 * Falls die externe Datei nicht gelesen werden kann,
-                 * wird die mitgelieferte Datei verwendet.
-                 */
-            }
+        if (externalInputStream != null) {
+            return createReader(
+                    externalInputStream
+            );
         }
 
         InputStream fallbackInputStream =
-                context.getAssets().open(FALLBACK_ASSET_FILE);
+                context.getAssets()
+                        .open(FALLBACK_ASSET_FILE);
 
-        return createReader(fallbackInputStream);
-    }
-
-    private static File getExternalCodeFile() {
-        File dcimFolder =
-                Environment.getExternalStoragePublicDirectory(
-                        Environment.DIRECTORY_DCIM
-                );
-
-        File pwdFolder = new File(
-                dcimFolder,
-                EXTERNAL_FOLDER
-        );
-
-        return new File(
-                pwdFolder,
-                EXTERNAL_FILE
+        return createReader(
+                fallbackInputStream
         );
     }
 
@@ -163,14 +145,25 @@ final class CodeRepository {
         );
     }
 
-    private static String normalizeDate(String inputDate) {
-        if (inputDate == null || inputDate.isEmpty()) {
+    private static String normalizeDate(
+            String inputDate
+    ) {
+        if (
+                inputDate == null
+                        || inputDate.isEmpty()
+        ) {
             return null;
         }
 
-        for (String pattern : SUPPORTED_DATE_FORMATS) {
+        for (
+                String pattern
+                : SUPPORTED_DATE_FORMATS
+        ) {
             SimpleDateFormat parser =
-                    new SimpleDateFormat(pattern, Locale.US);
+                    new SimpleDateFormat(
+                            pattern,
+                            Locale.US
+                    );
 
             parser.setLenient(false);
 
@@ -178,7 +171,10 @@ final class CodeRepository {
                     new ParsePosition(0);
 
             Date parsedDate =
-                    parser.parse(inputDate, parsePosition);
+                    parser.parse(
+                            inputDate,
+                            parsePosition
+                    );
 
             if (
                     parsedDate != null
