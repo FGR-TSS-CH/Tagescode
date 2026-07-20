@@ -1,7 +1,0 @@
-<resources>
-    <color name="screen_background">#FF111111</color>
-    <color name="widget_background">#FF202020</color>
-    <color name="widget_border">#33FFFFFF</color>
-    <color name="code_text">#FFFFFFFF</color>
-    <color name="secondary_text">#FFBBBBBB</color>
-</resources>
