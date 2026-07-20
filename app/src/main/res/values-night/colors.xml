@@ -18,6 +18,6 @@
     <color name="widget_background">#FF1D1D1F</color>
     <color name="widget_text">#FFFFFFFF</color>
     <color name="dialog_background">#FF191C21</color>
-    <color name="launcher_background">#FFFFFFFF</color>
+   <color name="launcher_background">#FF111820</color>
 
 </resources>
