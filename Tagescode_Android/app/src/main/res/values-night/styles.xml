@@ -1,0 +1,9 @@
+<resources>
+    <style name="Theme.Tagescode" parent="android:style/Theme.Material.NoActionBar">
+        <item name="android:fontFamily">sans</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:navigationBarColor">@color/screen_background</item>
+        <item name="android:statusBarColor">@color/screen_background</item>
+        <item name="android:colorAccent">#BBBBBB</item>
+    </style>
+</resources>
