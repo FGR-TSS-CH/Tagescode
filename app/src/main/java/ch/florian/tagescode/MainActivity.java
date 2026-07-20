@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -78,7 +79,7 @@ showBuildInformation();
                 view -> showToday()
         );
 
-        requestFileAccessIfNeeded();
+        requestCodeFolderAccessIfNeeded();
         showToday();
     }
 
@@ -248,43 +249,6 @@ showBuildInformation();
                 + text.substring(1);
     }
 
-    private void requestFileAccessIfNeeded() {
-        if (
-                Build.VERSION.SDK_INT
-                        < Build.VERSION_CODES.R
-        ) {
-            return;
-        }
-
-        if (Environment.isExternalStorageManager()) {
-            return;
-        }
-
-        try {
-            Intent appPermissionIntent =
-                    new Intent(
-                            Settings
-                                    .ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION
-                    );
-
-            appPermissionIntent.setData(
-                    Uri.parse(
-                            "package:" + getPackageName()
-                    )
-            );
-
-            startActivity(appPermissionIntent);
-
-        } catch (Exception exception) {
-            Intent generalPermissionIntent =
-                    new Intent(
-                            Settings
-                                    .ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION
-                    );
-
-            startActivity(generalPermissionIntent);
-        }
-    }
 private void showBuildInformation() {
     buildInfoView.setText(
             getString(
@@ -293,5 +257,79 @@ private void showBuildInformation() {
                     BuildConfig.BUILD_DATE
             )
     );
+}private void requestCodeFolderAccessIfNeeded() {
+    if (CodeFolderAccess.hasSavedFolder(this)) {
+        return;
+    }
+
+    Toast.makeText(
+            this,
+            "Bitte einmalig den Ordner "
+                    + "DCIM/Videojet/PwD auswählen.",
+            Toast.LENGTH_LONG
+    ).show();
+
+    startActivityForResult(
+            CodeFolderAccess.createFolderPickerIntent(),
+            CodeFolderAccess.REQUEST_CODE_FOLDER
+    );
+}
+
+@Override
+protected void onActivityResult(
+        int requestCode,
+        int resultCode,
+        Intent data
+) {
+    super.onActivityResult(
+            requestCode,
+            resultCode,
+            data
+    );
+
+    if (
+            requestCode
+                    != CodeFolderAccess.REQUEST_CODE_FOLDER
+    ) {
+        return;
+    }
+
+    if (resultCode != RESULT_OK) {
+        Toast.makeText(
+                this,
+                "Der Ordner wurde nicht freigegeben.",
+                Toast.LENGTH_LONG
+        ).show();
+
+        return;
+    }
+
+    boolean saved =
+            CodeFolderAccess.saveFolderAccess(
+                    this,
+                    data
+            );
+
+    if (saved) {
+        showToday();
+
+        TagescodeWidget.updateAllWidgets(
+                this
+        );
+
+        Toast.makeText(
+                this,
+                "PwD-Ordner wurde gespeichert.",
+                Toast.LENGTH_SHORT
+        ).show();
+
+    } else {
+        Toast.makeText(
+                this,
+                "Der Ordnerzugriff konnte "
+                        + "nicht gespeichert werden.",
+                Toast.LENGTH_LONG
+        ).show();
+    }
 }
 }
