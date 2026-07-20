@@ -25,6 +25,7 @@ public class MainActivity extends Activity {
     private TextView code2000View;
     private TextView code2001View;
     private TextView code2006View;
+    private TextView buildInfoView;
 
     private Button otherDateButton;
     private Button todayButton;
@@ -66,6 +67,11 @@ public class MainActivity extends Activity {
 
         todayButton =
                 findViewById(R.id.todayButton);
+
+        buildInfoView =
+        findViewById(R.id.buildInfoView);
+
+showBuildInformation();
 
         otherDateButton.setOnClickListener(
                 view -> openDatePicker()
@@ -282,4 +288,14 @@ public class MainActivity extends Activity {
             startActivity(generalPermissionIntent);
         }
     }
+private void showBuildInformation() {
+    buildInfoView.setText(
+            getString(
+                    R.string.build_info_format,
+                    BuildConfig.VERSION_NAME,
+                    BuildConfig.BUILD_NUMBER,
+                    BuildConfig.BUILD_DATE
+            )
+    );
+}
 }
