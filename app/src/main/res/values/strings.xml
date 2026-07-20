@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Tagescode</string>
+    <string name="widget_description">Zeigt automatisch den heutigen Tagescode an</string>
+    <string name="today">Heute</string>
+    <string name="other_date">Anderes Datum</string>
+    <string name="back_to_today">Zurück zu Heute</string>
+</resources>
