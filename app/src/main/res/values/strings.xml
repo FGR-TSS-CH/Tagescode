@@ -1,4 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
+<string name="videojet_logo_description">Videojet Logo</string>
+
+<string name="additional_codes">Weitere Tagescodes</string>
+
+<string name="yesterday_code_format">
+    Gestern (%1$s): %2$s
+</string>
+
+<string name="fixed_code_format">
+    %1$s: %2$s
+</string>
 <resources>
     <string name="app_name">Tagescode</string>
     <string name="app_description">Zeigt automatisch den heutigen Tagescode an</string>
