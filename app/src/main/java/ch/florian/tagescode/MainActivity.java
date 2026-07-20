@@ -293,7 +293,6 @@ private void showBuildInformation() {
             getString(
                     R.string.build_info_format,
                     BuildConfig.VERSION_NAME,
-                    BuildConfig.BUILD_NUMBER,
                     BuildConfig.BUILD_DATE
             )
     );
