@@ -10,7 +10,7 @@
 
     <item>
         <bitmap
-            android:src="@drawable/videojet_v_icon_foreground"
+            android:src="@drawable/tagescode_icon"
             android:gravity="center"
             android:filter="true" />
     </item>
