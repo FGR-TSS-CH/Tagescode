@@ -1,125 +1,155 @@
 package ch.florian.tagescode;
 
-import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Build;
 import android.widget.RemoteViews;
 
-import java.util.Calendar;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.Locale;
 
 public class TagescodeWidget extends AppWidgetProvider {
-    private static final String ACTION_REFRESH = "ch.florian.tagescode.REFRESH";
+
+    private static final String ACTION_REFRESH =
+            "ch.florian.tagescode.REFRESH";
+
+    private static final DateTimeFormatter DATE_FORMAT =
+            DateTimeFormatter.ofPattern(
+                    "dd.MM.yyyy",
+                    Locale.GERMANY
+            );
 
     @Override
-    public void onEnabled(Context context) {
-        super.onEnabled(context);
-        scheduleNextMidnight(context);
-    }
-
-    @Override
-    public void onDisabled(Context context) {
-        super.onDisabled(context);
-        cancelMidnightAlarm(context);
-    }
-
-    @Override
-    public void onUpdate(Context context, AppWidgetManager manager, int[] ids) {
-        for (int id : ids) {
-            updateWidget(context, manager, id);
+    public void onUpdate(
+            Context context,
+            AppWidgetManager appWidgetManager,
+            int[] appWidgetIds
+    ) {
+        for (int appWidgetId : appWidgetIds) {
+            updateAppWidget(
+                    context,
+                    appWidgetManager,
+                    appWidgetId
+            );
         }
-        scheduleNextMidnight(context);
     }
 
     @Override
-    public void onReceive(Context context, Intent intent) {
+    public void onReceive(
+            Context context,
+            Intent intent
+    ) {
         super.onReceive(context, intent);
+
+        if (intent == null) {
+            return;
+        }
+
         String action = intent.getAction();
-        if (Intent.ACTION_DATE_CHANGED.equals(action)
-                || Intent.ACTION_TIME_CHANGED.equals(action)
-                || Intent.ACTION_TIMEZONE_CHANGED.equals(action)
-                || Intent.ACTION_BOOT_COMPLETED.equals(action)
-                || ACTION_REFRESH.equals(action)) {
+
+        if (
+                Intent.ACTION_DATE_CHANGED.equals(action)
+                        || Intent.ACTION_TIME_CHANGED.equals(action)
+                        || Intent.ACTION_TIMEZONE_CHANGED.equals(action)
+                        || Intent.ACTION_BOOT_COMPLETED.equals(action)
+                        || ACTION_REFRESH.equals(action)
+        ) {
             updateAllWidgets(context);
-            scheduleNextMidnight(context);
         }
     }
 
     static void updateAllWidgets(Context context) {
-        AppWidgetManager manager = AppWidgetManager.getInstance(context);
-        int[] ids = manager.getAppWidgetIds(new ComponentName(context, TagescodeWidget.class));
-        for (int id : ids) {
-            updateWidget(context, manager, id);
+        AppWidgetManager appWidgetManager =
+                AppWidgetManager.getInstance(context);
+
+        ComponentName widgetComponent =
+                new ComponentName(
+                        context,
+                        TagescodeWidget.class
+                );
+
+        int[] appWidgetIds =
+                appWidgetManager.getAppWidgetIds(
+                        widgetComponent
+                );
+
+        for (int appWidgetId : appWidgetIds) {
+            updateAppWidget(
+                    context,
+                    appWidgetManager,
+                    appWidgetId
+            );
         }
     }
 
-    private static void updateWidget(Context context, AppWidgetManager manager, int id) {
-        RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget_tagescode);
-        views.setTextViewText(R.id.widgetCode, CodeRepository.getCodeForToday(context));
+    private static void updateAppWidget(
+            Context context,
+            AppWidgetManager appWidgetManager,
+            int appWidgetId
+    ) {
+        LocalDate today =
+                LocalDate.now();
 
-        Intent openDateSearch = new Intent(context, MainActivity.class);
-        openDateSearch.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        PendingIntent pendingIntent = PendingIntent.getActivity(
-                context,
-                0,
-                openDateSearch,
-                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+        String currentCode =
+                CodeRepository.getCodeForDate(
+                        context,
+                        today.getYear(),
+                        today.getMonthValue() - 1,
+                        today.getDayOfMonth()
+                );
+
+        String currentDate =
+                DATE_FORMAT.format(today);
+
+        RemoteViews views =
+                new RemoteViews(
+                        context.getPackageName(),
+                        R.layout.tagescode_widget
+                );
+
+        views.setTextViewText(
+                R.id.widgetCodeView,
+                currentCode
         );
-        views.setOnClickPendingIntent(R.id.widgetRoot, pendingIntent);
 
-        manager.updateAppWidget(id, views);
-    }
+        views.setTextViewText(
+                R.id.widgetDateView,
+                currentDate
+        );
 
-    private static void scheduleNextMidnight(Context context) {
-        AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-        if (alarmManager == null) {
-            return;
-        }
+        Intent openAppIntent =
+                new Intent(
+                        context,
+                        MainActivity.class
+                );
 
-        Calendar nextMidnight = Calendar.getInstance();
-        nextMidnight.add(Calendar.DAY_OF_YEAR, 1);
-        nextMidnight.set(Calendar.HOUR_OF_DAY, 0);
-        nextMidnight.set(Calendar.MINUTE, 0);
-        nextMidnight.set(Calendar.SECOND, 2);
-        nextMidnight.set(Calendar.MILLISECOND, 0);
+        openAppIntent.setFlags(
+                Intent.FLAG_ACTIVITY_NEW_TASK
+                        | Intent.FLAG_ACTIVITY_CLEAR_TOP
+                        | Intent.FLAG_ACTIVITY_SINGLE_TOP
+        );
 
-        PendingIntent pendingIntent = refreshPendingIntent(context);
-        alarmManager.cancel(pendingIntent);
+        PendingIntent openAppPendingIntent =
+                PendingIntent.getActivity(
+                        context,
+                        0,
+                        openAppIntent,
+                        PendingIntent.FLAG_UPDATE_CURRENT
+                                | PendingIntent.FLAG_IMMUTABLE
+                );
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            alarmManager.setAndAllowWhileIdle(
-                    AlarmManager.RTC_WAKEUP,
-                    nextMidnight.getTimeInMillis(),
-                    pendingIntent
-            );
-        } else {
-            alarmManager.set(
-                    AlarmManager.RTC_WAKEUP,
-                    nextMidnight.getTimeInMillis(),
-                    pendingIntent
-            );
-        }
-    }
+        views.setOnClickPendingIntent(
+                R.id.widgetRoot,
+                openAppPendingIntent
+        );
 
-    private static void cancelMidnightAlarm(Context context) {
-        AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-        if (alarmManager != null) {
-            alarmManager.cancel(refreshPendingIntent(context));
-        }
-    }
-
-    private static PendingIntent refreshPendingIntent(Context context) {
-        Intent intent = new Intent(context, TagescodeWidget.class);
-        intent.setAction(ACTION_REFRESH);
-        return PendingIntent.getBroadcast(
-                context,
-                1,
-                intent,
-                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+        appWidgetManager.updateAppWidget(
+                appWidgetId,
+                views
         );
     }
 }
