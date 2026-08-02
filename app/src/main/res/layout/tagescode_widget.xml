@@ -9,10 +9,10 @@
     android:focusable="true"
     android:gravity="center"
     android:orientation="vertical"
-    android:paddingStart="18dp"
-    android:paddingTop="10dp"
-    android:paddingEnd="18dp"
-    android:paddingBottom="10dp">
+    android:paddingStart="16dp"
+    android:paddingTop="8dp"
+    android:paddingEnd="16dp"
+    android:paddingBottom="8dp">
 
     <TextView
         android:id="@+id/widgetCodeView"
@@ -25,21 +25,21 @@
         android:maxLines="1"
         android:text="------"
         android:textColor="@color/widget_text"
-        android:textSize="38sp"
+        android:textSize="43sp"
         android:textStyle="bold" />
 
     <TextView
         android:id="@+id/widgetDateView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
-        android:alpha="0.72"
+        android:layout_marginTop="5dp"
+        android:alpha="0.78"
         android:fontFamily="sans-serif-medium"
         android:gravity="center"
         android:includeFontPadding="false"
         android:maxLines="1"
         android:text="02.08.2026"
         android:textColor="@color/widget_text"
-        android:textSize="13sp" />
+        android:textSize="14sp" />
 
 </LinearLayout>
