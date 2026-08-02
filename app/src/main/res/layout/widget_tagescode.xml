@@ -25,14 +25,14 @@
         android:maxLines="1"
         android:text="------"
         android:textColor="@color/widget_text"
-        android:textSize="40sp"
+        android:textSize="38sp"
         android:textStyle="bold" />
 
     <TextView
         android:id="@+id/widgetDateView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="3dp"
+        android:layout_marginTop="4dp"
         android:alpha="0.72"
         android:fontFamily="sans-serif-medium"
         android:gravity="center"
