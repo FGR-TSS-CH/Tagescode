@@ -3,15 +3,16 @@ package ch.florian.tagescode;
 import android.content.Context;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -35,14 +36,31 @@ final class CodeRepository {
             "dd-MM-yyyy"
     };
 
+    private static final Object CACHE_LOCK =
+            new Object();
+
+    /*
+     * Die komplette Codeliste wird nur einmal geladen.
+     * Danach erfolgen alle Abfragen direkt aus dieser Map.
+     */
+    private static volatile Map<String, String> cachedCodes =
+            Collections.emptyMap();
+
+    private static volatile boolean cacheLoaded = false;
+
     private CodeRepository() {
         // Keine Instanz erforderlich.
     }
 
     static String getCodeForToday(Context context) {
+        java.util.Calendar today =
+                java.util.Calendar.getInstance();
+
         return getCodeForDate(
                 context,
-                new Date()
+                today.get(java.util.Calendar.YEAR),
+                today.get(java.util.Calendar.MONTH),
+                today.get(java.util.Calendar.DAY_OF_MONTH)
         );
     }
 
@@ -52,36 +70,130 @@ final class CodeRepository {
             int month,
             int dayOfMonth
     ) {
-        Calendar calendar =
-                Calendar.getInstance();
+        ensureLoaded(context);
 
-        calendar.clear();
+        String isoDate =
+                String.format(
+                        Locale.US,
+                        "%04d-%02d-%02d",
+                        year,
+                        month + 1,
+                        dayOfMonth
+                );
 
-        calendar.set(
-                year,
-                month,
-                dayOfMonth
-        );
+        String code = cachedCodes.get(isoDate);
 
-        return getCodeForDate(
-                context,
-                calendar.getTime()
-        );
+        if (code == null || code.isEmpty()) {
+            return "------";
+        }
+
+        return code;
     }
 
-    private static String getCodeForDate(
-            Context context,
-            Date requestedDate
+    /**
+     * Lädt die Datei erneut. Während des Ladens bleibt
+     * der bisherige Cache verwendbar.
+     */
+    static void reload(Context context) {
+        Context applicationContext =
+                context.getApplicationContext();
+
+        Map<String, String> loadedCodes =
+                loadCodes(applicationContext);
+
+        synchronized (CACHE_LOCK) {
+            cachedCodes =
+                    Collections.unmodifiableMap(
+                            new HashMap<>(loadedCodes)
+                    );
+
+            cacheLoaded = true;
+        }
+    }
+
+    /**
+     * Wird verwendet, nachdem ein anderer Ordner
+     * ausgewählt wurde.
+     */
+    static void invalidate() {
+        synchronized (CACHE_LOCK) {
+            cachedCodes = Collections.emptyMap();
+            cacheLoaded = false;
+        }
+    }
+
+    private static void ensureLoaded(Context context) {
+        if (cacheLoaded) {
+            return;
+        }
+
+        synchronized (CACHE_LOCK) {
+            if (cacheLoaded) {
+                return;
+            }
+
+            Map<String, String> loadedCodes =
+                    loadCodes(
+                            context.getApplicationContext()
+                    );
+
+            cachedCodes =
+                    Collections.unmodifiableMap(
+                            new HashMap<>(loadedCodes)
+                    );
+
+            cacheLoaded = true;
+        }
+    }
+
+    private static Map<String, String> loadCodes(
+            Context context
     ) {
-        String requestedDateString =
-                new SimpleDateFormat(
-                        "yyyy-MM-dd",
-                        Locale.US
-                ).format(requestedDate);
+        /*
+         * Zuerst wird die externe PwD.txt gelesen.
+         */
+        InputStream externalInputStream =
+                CodeFolderAccess.openCodeFile(context);
+
+        if (externalInputStream != null) {
+            Map<String, String> externalCodes =
+                    readEntries(externalInputStream);
+
+            if (!externalCodes.isEmpty()) {
+                return externalCodes;
+            }
+        }
+
+        /*
+         * Falls die externe Datei fehlt oder ungültig ist,
+         * wird die integrierte Datei verwendet.
+         */
+        try {
+            InputStream fallbackInputStream =
+                    context.getAssets()
+                            .open(FALLBACK_ASSET_FILE);
+
+            return readEntries(fallbackInputStream);
+
+        } catch (Exception ignored) {
+            return new HashMap<>();
+        }
+    }
+
+    private static Map<String, String> readEntries(
+            InputStream inputStream
+    ) {
+        Map<String, String> result =
+                new HashMap<>();
 
         try (
                 BufferedReader reader =
-                        openCodeReader(context)
+                        new BufferedReader(
+                                new InputStreamReader(
+                                        inputStream,
+                                        StandardCharsets.UTF_8
+                                )
+                        )
         ) {
             String line;
 
@@ -95,54 +207,20 @@ final class CodeRepository {
                                     matcher.group(1)
                             );
 
-                    if (
-                            requestedDateString.equals(
-                                    normalizedDate
-                            )
-                    ) {
-                        return matcher.group(2);
+                    if (normalizedDate != null) {
+                        result.put(
+                                normalizedDate,
+                                matcher.group(2)
+                        );
                     }
                 }
             }
 
         } catch (Exception ignored) {
-            // Bei einem Fehler wird der Platzhalter angezeigt.
+            // Bei einem Lesefehler wird eine leere Map geliefert.
         }
 
-        return "------";
-    }
-
-    private static BufferedReader openCodeReader(
-            Context context
-    ) throws IOException {
-
-        InputStream externalInputStream =
-                CodeFolderAccess.openCodeFile(context);
-
-        if (externalInputStream != null) {
-            return createReader(
-                    externalInputStream
-            );
-        }
-
-        InputStream fallbackInputStream =
-                context.getAssets()
-                        .open(FALLBACK_ASSET_FILE);
-
-        return createReader(
-                fallbackInputStream
-        );
-    }
-
-    private static BufferedReader createReader(
-            InputStream inputStream
-    ) {
-        return new BufferedReader(
-                new InputStreamReader(
-                        inputStream,
-                        StandardCharsets.UTF_8
-                )
-        );
+        return result;
     }
 
     private static String normalizeDate(
@@ -155,10 +233,7 @@ final class CodeRepository {
             return null;
         }
 
-        for (
-                String pattern
-                : SUPPORTED_DATE_FORMATS
-        ) {
+        for (String pattern : SUPPORTED_DATE_FORMATS) {
             SimpleDateFormat parser =
                     new SimpleDateFormat(
                             pattern,
