@@ -24,6 +24,17 @@ public class TagescodeWidget extends AppWidgetProvider {
             );
 
     @Override
+    public void onEnabled(Context context) {
+        super.onEnabled(context);
+
+        updateAllWidgets(context);
+
+        DailyWidgetUpdateReceiver.scheduleNextUpdate(
+                context
+        );
+    }
+
+    @Override
     public void onUpdate(
             Context context,
             AppWidgetManager appWidgetManager,
@@ -36,6 +47,14 @@ public class TagescodeWidget extends AppWidgetProvider {
                     appWidgetId
             );
         }
+
+        /*
+         * Sicherheitshalber den nächsten Tageswechsel
+         * erneut einplanen.
+         */
+        DailyWidgetUpdateReceiver.scheduleNextUpdate(
+                context
+        );
     }
 
     @Override
@@ -49,20 +68,39 @@ public class TagescodeWidget extends AppWidgetProvider {
             return;
         }
 
-        String action = intent.getAction();
+        String action =
+                intent.getAction();
 
         if (
-                Intent.ACTION_DATE_CHANGED.equals(action)
+                AppWidgetManager.ACTION_APPWIDGET_UPDATE.equals(action)
+                        || Intent.ACTION_DATE_CHANGED.equals(action)
                         || Intent.ACTION_TIME_CHANGED.equals(action)
                         || Intent.ACTION_TIMEZONE_CHANGED.equals(action)
                         || Intent.ACTION_BOOT_COMPLETED.equals(action)
                         || ACTION_REFRESH.equals(action)
         ) {
+            /*
+             * Nur aktuelles Datum bestimmen und den
+             * bereits bekannten Tagescode anzeigen.
+             *
+             * Die PwD.txt wird hier NICHT neu eingelesen.
+             */
             updateAllWidgets(context);
+
+            /*
+             * Nach Neustart, Zeitänderung oder
+             * Zeitzonenwechsel den nächsten Alarm
+             * erneut korrekt setzen.
+             */
+            DailyWidgetUpdateReceiver.scheduleNextUpdate(
+                    context
+            );
         }
     }
 
-    static void updateAllWidgets(Context context) {
+    public static void updateAllWidgets(
+            Context context
+    ) {
         AppWidgetManager appWidgetManager =
                 AppWidgetManager.getInstance(context);
 
@@ -91,9 +129,18 @@ public class TagescodeWidget extends AppWidgetProvider {
             AppWidgetManager appWidgetManager,
             int appWidgetId
     ) {
+        /*
+         * Entscheidend:
+         * Bei jeder Aktualisierung wird das aktuelle
+         * Datum NEU bestimmt.
+         */
         LocalDate today =
                 LocalDate.now();
 
+        /*
+         * Der Tagescode kommt aus dem bereits vorhandenen
+         * CodeRepository.
+         */
         String currentCode =
                 CodeRepository.getCodeForDate(
                         context,
@@ -121,6 +168,9 @@ public class TagescodeWidget extends AppWidgetProvider {
                 currentDate
         );
 
+        /*
+         * Klick auf das Widget öffnet die App.
+         */
         Intent openAppIntent =
                 new Intent(
                         context,
