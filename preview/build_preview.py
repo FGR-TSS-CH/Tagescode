@@ -33,6 +33,8 @@ today=datetime.date.today()
 build_date=f'{months[today.month-1]} {today.year}'
 build_info=strings['build_info_format'].replace('%1$s',version).replace('%2$s',build_date)
 html=(root/'preview/template.html').read_text(encoding='utf-8-sig').replace('__IMPORTED_AT__',json.dumps(datetime.datetime.now().astimezone().isoformat())).replace('__FONT__',font).replace('__CALENDAR_ICON__',calendar_icon).replace('__DEVELOPED_BY__',html_module.escape(strings['developed_by'])).replace('__BUILD_INFO__',html_module.escape(build_info)).replace('__LOGO__',logo).replace('__LOGO_DARK__',logo_dark).replace('__SWISS_BADGE__',swiss_badge).replace('__CODES__',json.dumps(codes)).replace('__SOURCE_NOTE__',f'{len(codes):,} Tagescodes · Stand {datetime.datetime.now():%d.%m.%Y %H:%M}'.replace(',', '.'))
+for icon in (root/'preview/assets/status').glob('*.svg'):
+ html=html.replace('__ICON_'+icon.stem+'__','data:image/svg+xml;base64,'+base64.b64encode(icon.read_bytes()).decode())
 output=Path(sys.argv[1]) if len(sys.argv)>1 else root/'preview/index.html'
 output.write_text(html,encoding='utf-8')
 print(json.dumps({'output':str(output.resolve()),'source':str(source),'count':len(codes),'first':min(codes) if codes else None,'last':max(codes) if codes else None}))
