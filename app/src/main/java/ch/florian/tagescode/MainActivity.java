@@ -93,7 +93,7 @@ public class MainActivity extends Activity {
          */
         showToday();
 
-        requestCodeFolderAccessIfNeeded();
+        requestCloudFileAccessIfNeeded();
     }
 
     private void bindViews() {
@@ -139,6 +139,42 @@ public class MainActivity extends Activity {
                 );
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(android.view.Menu menu) {
+        menu.add(0, 1, 0, "OneDrive-Datei auswählen");
+        menu.add(0, 2, 1, "PwD-Ordner auswählen");
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(android.view.MenuItem item) {
+        if (item.getItemId() == 1) {
+            openCloudFilePicker();
+            return true;
+        }
+        if (item.getItemId() == 2) {
+            startActivityForResult(CodeFolderAccess.createFolderPickerIntent(),
+                    CodeFolderAccess.REQUEST_CODE_FOLDER);
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void requestCloudFileAccessIfNeeded() {
+        if (!CloudCodeFileAccess.hasSavedFile(this)) openCloudFilePicker();
+    }
+
+    private void openCloudFilePicker() {
+        Toast.makeText(this, "Bitte Tagescodes.txt aus OneDrive auswählen.",
+                Toast.LENGTH_LONG).show();
+        try {
+            startActivityForResult(CloudCodeFileAccess.createFilePickerIntent(),
+                    CloudCodeFileAccess.REQUEST_CLOUD_CODE_FILE);
+        } catch (android.content.ActivityNotFoundException exception) {
+            Toast.makeText(this, "Kein Dateiauswahldialog verfügbar.", Toast.LENGTH_LONG).show();
+        }
+    }
+
     private void configureButtons() {
         /*
          * Sowohl das Tippen auf die grosse Zahl als auch
@@ -151,6 +187,13 @@ public class MainActivity extends Activity {
         otherDateButton.setOnClickListener(
                 view -> openDatePicker()
         );
+
+        buildInfoView.setOnClickListener(view -> {
+            android.widget.PopupMenu menu = new android.widget.PopupMenu(this, buildInfoView);
+            onCreateOptionsMenu(menu.getMenu());
+            menu.setOnMenuItemClickListener(this::onOptionsItemSelected);
+            menu.show();
+        });
 
         todayButton.setOnClickListener(
                 view -> showToday()
@@ -403,6 +446,7 @@ public class MainActivity extends Activity {
                     getApplicationContext()
             );
 
+            int imported = CodeRepository.importCloudCodes(getApplicationContext());
             mainHandler.post(() -> {
                 if (
                         isFinishing()
@@ -424,6 +468,12 @@ public class MainActivity extends Activity {
                     return;
                 }
 
+                if (imported < 0) {
+                    Toast.makeText(this, "OneDrive-Datei nicht lesbar. Gespeicherte Codes bleiben verfügbar. "
+                            + "Zum erneuten Auswählen unten auf die Version tippen.", Toast.LENGTH_LONG).show();
+                } else if (imported > 0) {
+                    Toast.makeText(this, imported + " neue Tagescodes gespeichert.", Toast.LENGTH_SHORT).show();
+                }
                 showToday();
 
                 TagescodeWidget.updateAllWidgets(
@@ -431,30 +481,6 @@ public class MainActivity extends Activity {
                 );
             });
         });
-    }
-
-    private void requestCodeFolderAccessIfNeeded() {
-        if (
-                CodeFolderAccess.hasSavedFolder(
-                        this
-                )
-        ) {
-            return;
-        }
-
-        Toast.makeText(
-                this,
-                "Bitte einmalig den Ordner "
-                        + "DCIM/Videojet/PwD auswählen.",
-                Toast.LENGTH_LONG
-        ).show();
-
-        startActivityForResult(
-                CodeFolderAccess
-                        .createFolderPickerIntent(),
-                CodeFolderAccess
-                        .REQUEST_CODE_FOLDER
-        );
     }
 
     @Override
@@ -468,6 +494,21 @@ public class MainActivity extends Activity {
                 resultCode,
                 data
         );
+
+        if (requestCode == CloudCodeFileAccess.REQUEST_CLOUD_CODE_FILE) {
+            if (resultCode == RESULT_OK) {
+                if (CloudCodeFileAccess.saveFileAccess(this, data)) {
+                    reloadCodesInBackground();
+                } else {
+                    Toast.makeText(this, "Dauerhafter Dateizugriff konnte nicht gespeichert werden.",
+                            Toast.LENGTH_LONG).show();
+                }
+            } else {
+                Toast.makeText(this, "Später auswählen: unten auf die Version tippen.",
+                        Toast.LENGTH_LONG).show();
+            }
+            return;
+        }
 
         if (
                 requestCode

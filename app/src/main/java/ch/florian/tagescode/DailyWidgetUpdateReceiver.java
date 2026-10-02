@@ -19,15 +19,8 @@ public class DailyWidgetUpdateReceiver
             Context context,
             Intent intent
     ) {
-        /*
-         * Um 00:01 Uhr lediglich Widget neu zeichnen.
-         *
-         * Keine PwD.txt laden.
-         * Keine Codes aktualisieren.
-         *
-         * Das neue Datum bestimmt automatisch,
-         * welcher gespeicherte Tagescode angezeigt wird.
-         */
+        // Draw from local storage immediately; sync cloud data in a scheduled job.
+        CodeSyncJobService.enqueue(context);
         TagescodeWidget.updateAllWidgets(
                 context
         );

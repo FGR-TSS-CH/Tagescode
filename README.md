@@ -17,7 +17,7 @@ Die App zeigt den heutigen sechsstelligen Tagescode an und stellt ihn zusätzlic
 * Automatischer Hell- und Dunkelmodus.
 * Unterschiedliches Videojet-Logo für Hell- und Dunkelmodus.
 * Eigenes Tagescode-App-Icon.
-* Komplett offline.
+* Bereits gespeicherte Codes funktionieren offline; neue OneDrive-Codes werden bei verfügbarem Dateizugriff importiert.
 
 ## Weitere Tagescodes
 
@@ -60,25 +60,27 @@ Beispiel:
 
 `07/16/2026 000416`
 
-## Externe Codeliste
+## OneDrive und lokale Codelisten
 
-Zusätzlich kann die App eine externe Datei `PwD.txt` verwenden.
+Beim ersten Start die von Power Automate befüllte `Tagescodes.txt` im Android-Dateiauswahldialog auswählen. Dazu muss OneDrive als Dateianbieter verfügbar und angemeldet sein. Die App speichert die Leseberechtigung dauerhaft.
 
-Der Ordner wird beim ersten Start einmalig ausgewählt.
+Beim Öffnen der App und beim täglichen Widget-Update wird die Datei im Hintergrund eingelesen. Neue Datumswerte werden im privaten App-Speicher gesichert. Vorhandene Codes werden nicht überschrieben, bei Duplikaten gewinnt der erste gültige Eintrag. Führende Nullen bleiben erhalten. Grusszeilen und ungültige Daten werden ignoriert. Bei einem abgebrochenen Lesevorgang wird kein Teilimport gespeichert. Die lokale Datei wird atomar ersetzt.
 
-Anschliessend merkt sich die App den Zugriff auf diesen Ordner.
+Unterstützte Formate sind `MM/DD/YYYY`, `DD.MM.YYYY`, `YYYY-MM-DD` und `DD-MM-YYYY`, jeweils gefolgt von sechs Ziffern. Schrägstriche bedeuten immer Monat/Tag/Jahr, passend zur Power-Automate-Datei. Beispiel: `10/02/2026 000416` ist der 2. Oktober.
 
-Wird die Datei `PwD.txt` später durch eine neue Version ersetzt, muss der Ordner nicht erneut ausgewählt werden.
+Zum Wechseln der Datei oder erneuten Erteilen der Berechtigung unten auf die Versionsanzeige tippen und **OneDrive-Datei auswählen** wählen. Dort lässt sich auch weiterhin ein **PwD-Ordner auswählen**. Eine bestehende Ordnerfreigabe bleibt erhalten; neue Einträge aus dessen `PwD.txt` werden ebenfalls lokal gespeichert. Die integrierte Codeliste bleibt verfügbar.
+
+Bei fehlendem Internet, abgemeldetem OneDrive oder entzogenem Zugriff bleiben lokal gespeicherte Codes erhalten. In der App erscheint bei fehlgeschlagenem Cloud-Import ein Hinweis. Android und der Dateianbieter bestimmen, wann aktuelle Cloud-Inhalte verfügbar sind; die App kann keine sofortige OneDrive-Synchronisation erzwingen.
 
 ## Widget-Aktualisierung
 
-Der Tagescode eines bestimmten Datums ändert sich nie.
+Das Widget zeigt beim Tageswechsel sofort den lokal bekannten Code. Der Alarm kurz nach Mitternacht plant zusätzlich einen Android-Hintergrundjob zum Import ein. Nach dem Import wird das Widget erneut aktualisiert. Fehlgeschlagene Cloud-Zugriffe werden mit zeitlichem Abstand erneut versucht. Android darf Alarm und Hintergrundjob im Energiesparmodus verzögern.
 
-Beim Tageswechsel muss das Widget deshalb lediglich den Code des neuen Datums anzeigen.
+## Tests
 
-Das Widget wird automatisch beim Datumswechsel aktualisiert.
+`gradle :app:testDebugUnitTest :app:assembleDebug`
 
-Zusätzlich wird kurz nach Mitternacht eine weitere Aktualisierung ausgelöst, damit der neue Tagescode zuverlässig angezeigt wird.
+Die Importtests prüfen Datumsformate, führende Nullen, Duplikate, ungültige Einträge und Lesefehler. Auf einem Android-Gerät zusätzlich Dateiauswahl, dauerhafte Freigabe nach Neustart, Offline-Anzeige und täglichen Widget-Import mit dem verwendeten OneDrive-Anbieter prüfen.
 
 ## Version
 
