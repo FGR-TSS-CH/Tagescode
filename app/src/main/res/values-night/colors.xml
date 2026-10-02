@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="screen_background">#000000</color>
-    <color name="window_background">#000000</color>
+    <color name="screen_background">#14171B</color>
+    <color name="window_background">#14171B</color>
     <color name="text_primary">#FFFFFF</color>
-    <color name="text_secondary">#FFFFFF</color>
-    <color name="surface">#333333</color>
-    <color name="surface_secondary">#000000</color>
-    <color name="surface_stroke">#577790</color>
-    <color name="accent">#FFCC00</color>
-    <color name="accent_pressed">#00A4DE</color>
-    <color name="accent_text">#000000</color>
+    <color name="text_secondary">#BBC3CC</color>
+    <color name="surface">#20252B</color>
+    <color name="surface_secondary">#2B3138</color>
+    <color name="surface_stroke">#414A54</color>
+    <color name="accent">#005D9C</color>
+    <color name="accent_pressed">#004B80</color>
+    <color name="accent_text">#FFFFFF</color>
     <color name="widget_background">#577790</color>
     <color name="widget_text">#FFFFFF</color>
-    <color name="dialog_background">#333333</color>
+    <color name="dialog_background">#20252B</color>
     <color name="launcher_background">#333333</color>
     <color name="brand_blue">#00A4DE</color>
     <color name="brand_spinnaker">#005D9C</color>

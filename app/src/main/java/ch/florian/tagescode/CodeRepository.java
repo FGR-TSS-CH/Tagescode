@@ -62,10 +62,24 @@ final class CodeRepository {
     static int importCloudCodes(Context context) {
         try (InputStream input = CloudCodeFileAccess.openCodeFile(context)) {
             if (input == null) return 0;
-            return mergeAndSave(context, CodeFileParser.read(input));
+            Map<String, String> incoming = CodeFileParser.read(input);
+            if (incoming.isEmpty()) return -1;
+            int added = mergeAndSave(context, incoming);
+            context.getSharedPreferences("code_import_status", Context.MODE_PRIVATE)
+                    .edit().putLong("last_success", System.currentTimeMillis()).apply();
+            return added;
         } catch (IOException exception) {
             return -1;
         }
+    }
+
+    static long lastSuccessfulImport(Context context) {
+        return context.getSharedPreferences("code_import_status", Context.MODE_PRIVATE)
+                .getLong("last_success", 0);
+    }
+
+    static String latestAvailableDate(Context context) {
+        return snapshot(context).keySet().stream().max(String::compareTo).orElse(null);
     }
 
     static void invalidate() {

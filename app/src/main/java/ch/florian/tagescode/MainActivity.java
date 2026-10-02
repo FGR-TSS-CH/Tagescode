@@ -21,6 +21,8 @@ public class MainActivity extends Activity {
 
     private TextView codeView;
     private TextView dateView;
+    private TextView codeLabelView;
+    private TextView dataStatusView;
 
     private TextView yesterdayCodeView;
     private TextView code2000View;
@@ -98,6 +100,8 @@ public class MainActivity extends Activity {
     }
 
     private void bindViews() {
+        codeLabelView = findViewById(R.id.codeLabelView);
+        dataStatusView = findViewById(R.id.dataStatusView);
         codeView =
                 findViewById(R.id.codeView);
 
@@ -178,6 +182,21 @@ public class MainActivity extends Activity {
         codeView.setOnClickListener(
                 view -> openDatePicker()
         );
+
+        codeView.setOnLongClickListener(view -> {
+            String code = codeView.getText().toString();
+            if (!code.matches("[0-9]{6}")) {
+                Toast.makeText(this, R.string.no_code_to_copy, Toast.LENGTH_SHORT).show();
+                return true;
+            }
+            android.content.ClipboardManager clipboard =
+                    (android.content.ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+            if (clipboard != null) {
+                clipboard.setPrimaryClip(android.content.ClipData.newPlainText("Tagescode", code));
+                Toast.makeText(this, R.string.code_copied, Toast.LENGTH_SHORT).show();
+            }
+            return true;
+        });
 
         otherDateButton.setOnClickListener(
                 view -> openDatePicker()
@@ -263,6 +282,9 @@ public class MainActivity extends Activity {
                 );
 
         codeView.setText(code);
+        codeLabelView.setText(date.equals(LocalDate.now())
+                ? R.string.code_today_label : R.string.code_selected_label);
+        updateDataStatus();
 
         dateView.setText(
                 capitalise(
@@ -357,6 +379,18 @@ public class MainActivity extends Activity {
                 date.getMonthValue() - 1,
                 date.getDayOfMonth()
         );
+    }
+
+    private void updateDataStatus() {
+        long importedAt = CodeRepository.lastSuccessfulImport(this);
+        String imported = importedAt == 0 ? getString(R.string.import_unknown)
+                : getString(R.string.last_import_format,
+                    new java.text.SimpleDateFormat("dd.MM.yyyy, HH:mm", Locale.GERMANY)
+                        .format(new java.util.Date(importedAt)));
+        String latest = CodeRepository.latestAvailableDate(this);
+        String available = latest == null ? getString(R.string.no_codes)
+                : getString(R.string.codes_until_format, shortDateFormat.format(LocalDate.parse(latest)));
+        dataStatusView.setText(imported + "\n" + available);
     }
 
     private void showBuildInformation() {

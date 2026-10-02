@@ -6,10 +6,8 @@ import java.util.Locale
 val githubRunNumber =
     System.getenv("GITHUB_RUN_NUMBER")?.toIntOrNull() ?: 1
 
-val versionBase = "1.3"
-
-val automaticVersionName =
-    "$versionBase.$githubRunNumber"
+// User-facing release version is independent of the CI build counter.
+val releaseVersionName = "1.4.1"
 
 val automaticBuildDate =
     ZonedDateTime.now(ZoneId.of("Europe/Zurich"))
@@ -34,7 +32,7 @@ android {
         targetSdk = 35
 
         versionCode = githubRunNumber
-        versionName = automaticVersionName
+        versionName = releaseVersionName
 
         buildConfigField(
             "String",
