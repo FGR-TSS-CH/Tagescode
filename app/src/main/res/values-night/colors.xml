@@ -10,7 +10,7 @@
     <color name="accent">#005D9C</color>
     <color name="accent_pressed">#004B80</color>
     <color name="accent_text">#FFFFFF</color>
-    <color name="widget_background">#577790</color>
+    <color name="widget_background">#333333</color>
     <color name="widget_text">#FFFFFF</color>
     <color name="dialog_background">#20252B</color>
     <color name="launcher_background">#333333</color>
