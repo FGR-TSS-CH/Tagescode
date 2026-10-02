@@ -83,13 +83,6 @@ public class MainActivity extends Activity {
         );
 
         bindViews();
-        android.widget.ImageView logo = findViewById(R.id.videojetLogo);
-        boolean darkMode = (getResources().getConfiguration().uiMode
-                & android.content.res.Configuration.UI_MODE_NIGHT_MASK)
-                == android.content.res.Configuration.UI_MODE_NIGHT_YES;
-        if (darkMode) logo.clearColorFilter();
-        else logo.setColorFilter(android.graphics.Color.rgb(0, 91, 150),
-                android.graphics.PorterDuff.Mode.SRC_IN);
         configureButtons();
 
         showBuildInformation();
