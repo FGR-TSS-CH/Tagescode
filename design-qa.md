@@ -1,16 +1,14 @@
-# Version 1.4.1 verification
+# Version 1.4.2 layout verification
 
 final result: passed
 
-Scope: user-approved refinements to the prior screenshot-matched layout in both Android and browser preview. Blue primary button (#005D9C), softer dark surfaces, date-dependent code label, last successful import plus latest available date, and long-press copy.
+User requirement: use Zuletzt geprüft and keep the complete screen visible when selecting another date.
+Implementation evidence: ../../outputs/Tagescode-V1.4.2-Vorschau.png; browser 885 x 884, phone CSS 384 x 832.
 
-Browser evidence: ../../outputs/Tagescode-V1.4.1-Vorschau.png, viewport 885 x 884, logical phone 384 x 832. Checked both themes. Content viewport and scrollHeight both 788px in the today state. Footer and all four rows fit. Original logos remain sharp and use the correct theme variant. Typography and spacing retained, with modest spacing reductions to accommodate the label and status. Brand-blue button uses white text.
+Today and a selected October 3 date use the same 56px horizontal action row. Today is beside the date picker, not a new row. Measured content height and scrollHeight are both 788px in selected-date state. Footer stays visible. Code label, four additional codes, metadata, typography, colors, original logos and footer verified visually. Copy/layout unchanged otherwise.
 
-Interactions verified: choose October 3, label changes to selected code; Today restores today's label/date; theme switch works; copy action resolves with success confirmation. Browser clipboard readback through the automation bridge returned empty, so actual OS clipboard content remains unverified. Native Android long-press uses ClipboardManager; physical-device interaction has not been tested. No browser console errors.
+Android replaces the scrolling parent with FitScreenLayout: measure full content, then scale down only if needed to fit the available height, with horizontal centering. No content hidden to remove scrolling. Reduced bottom padding to 12dp. Selected-date button visibility follows actual date rather than selection method.
 
-Data status: Android timestamp records successful nonempty parses after cache save, including successful reads with no new dates. Failures and empty files do not update it. Preview uses its own snapshot/import time, not the phone's timestamp. Last available date is computed from the imported code set; no claim of uninterrupted coverage. VersionName is fixed at 1.4.1, while versionCode continues increasing with CI runs.
+Local Android API compilation and 9 parser/calendar tests pass. XML parses. Physical-phone rendering not tested; final APK compiled by GitHub Actions before handoff.
 
-Validation: local Java compilation against Android API succeeds; all 9 existing parser/date tests pass. GitHub build run 37018468658 is checked separately before release handoff.
-
-No actionable P0/P1/P2 visual findings. Browser and Samsung typography can vary slightly. Android system chrome is not emulated.
-
+No remaining P0/P1/P2 findings. System font/rendering differences remain possible; unusually large accessibility text will be proportionally fitted.

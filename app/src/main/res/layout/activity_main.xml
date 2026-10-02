@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<ch.florian.tagescode.FitScreenLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/screen_background"
-    android:fillViewport="true"
-    android:overScrollMode="never">
+>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -14,7 +13,7 @@
         android:paddingStart="22dp"
         android:paddingTop="20dp"
         android:paddingEnd="22dp"
-        android:paddingBottom="32dp">
+        android:paddingBottom="12dp">
 
         <ImageView
     android:id="@+id/videojetLogo"
@@ -71,11 +70,16 @@
 
         </LinearLayout>
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginTop="20dp"
+            android:orientation="horizontal">
       <LinearLayout
     android:id="@+id/otherDateButton"
-    android:layout_width="match_parent"
+    android:layout_width="0dp"
+    android:layout_weight="1"
     android:layout_height="56dp"
-    android:layout_marginTop="20dp"
     android:background="@drawable/button_primary"
     android:clickable="true"
     android:focusable="true"
@@ -103,15 +107,17 @@
 
         <Button
             android:id="@+id/todayButton"
-            android:layout_width="wrap_content"
-            android:layout_height="48dp"
-            android:layout_marginTop="12dp"
+            android:layout_width="88dp"
+            android:layout_height="56dp"
+            android:layout_marginStart="10dp"
             android:background="@drawable/button_secondary"
-            android:minWidth="140dp"
+            android:minWidth="0dp"
             android:text="@string/today"
             android:textAllCaps="false"
             android:textColor="@color/text_primary"
             android:visibility="gone" />
+
+        </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -229,4 +235,4 @@
 
     </LinearLayout>
 
-</ScrollView>
+</ch.florian.tagescode.FitScreenLayout>

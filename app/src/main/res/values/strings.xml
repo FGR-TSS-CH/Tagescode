@@ -31,8 +31,8 @@
     <string name="code_selected_label">Ausgewählter Tagescode</string>
     <string name="code_copied">Tagescode kopiert</string>
     <string name="no_code_to_copy">Für dieses Datum ist kein Code verfügbar.</string>
-    <string name="import_unknown">Noch kein erfolgreicher Import erfasst</string>
-    <string name="last_import_format">Zuletzt importiert: %1$s</string>
+    <string name="import_unknown">Noch keine erfolgreiche Prüfung erfasst</string>
+    <string name="last_import_format">Zuletzt geprüft: %1$s</string>
     <string name="codes_until_format">Codes verfügbar bis: %1$s</string>
     <string name="no_codes">Keine Tagescodes verfügbar</string>
 </resources>

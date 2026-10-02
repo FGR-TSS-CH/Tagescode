@@ -292,7 +292,7 @@ public class MainActivity extends Activity {
                 )
         );
 
-        if (manuallySelected) {
+        if (!date.equals(LocalDate.now())) {
             todayButton.setVisibility(
                     View.VISIBLE
             );
