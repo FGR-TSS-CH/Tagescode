@@ -97,7 +97,7 @@ public class MainActivity extends Activity {
         );
 
         bindViews();
-        garmin = new GarminConnection(this);
+
         configureButtons();
 
         showBuildInformation();
@@ -239,6 +239,18 @@ public class MainActivity extends Activity {
         todayButton.setOnClickListener(
                 view -> showToday()
         );
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        garmin = new GarminConnection(this);
+    }
+
+    @Override
+    protected void onStop() {
+        if (garmin != null) { garmin.close(); garmin = null; }
+        super.onStop();
     }
 
     @Override
@@ -512,7 +524,7 @@ public class MainActivity extends Activity {
                 TagescodeWidget.updateAllWidgets(
                         this
                 );
-                garmin.sync();
+                if (garmin != null) garmin.sync();
             });
         });
     }

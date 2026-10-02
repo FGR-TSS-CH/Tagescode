@@ -97,6 +97,8 @@
         </receiver>
 
 
+        <service android:name=".GarminBackgroundJob" android:permission="android.permission.BIND_JOB_SERVICE" android:exported="false" />
+
         <!-- Tägliche Aktualisierung um 00:01 Uhr -->
         <receiver
             android:name=".DailyWidgetUpdateReceiver"

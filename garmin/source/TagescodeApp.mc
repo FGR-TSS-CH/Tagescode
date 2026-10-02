@@ -97,13 +97,20 @@ class CodeService extends System.ServiceDelegate {
 
 class CodeView extends WatchUi.View {
     var ticker;
+    var dismissTimer;
     function initialize() { View.initialize(); }
     function onShow() {
         ticker = new Timer.Timer();
         ticker.start(method(:refresh), 1000, true);
+        dismissTimer = new Timer.Timer();
+        dismissTimer.start(method(:dismiss), 10000, false);
     }
     function refresh() as Void { WatchUi.requestUpdate(); }
-    function onHide() { if (ticker != null) { ticker.stop(); ticker = null; } }
+    function dismiss() as Void { System.exit(); }
+    function onHide() {
+        if (ticker != null) { ticker.stop(); ticker = null; }
+        if (dismissTimer != null) { dismissTimer.stop(); dismissTimer = null; }
+    }
     function onUpdate(dc) {
         dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_BLACK);
         dc.clear();

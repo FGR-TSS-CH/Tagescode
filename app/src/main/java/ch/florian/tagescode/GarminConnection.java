@@ -14,6 +14,7 @@ import java.util.List;
 
 /** Optional, foreground companion connection through Garmin Connect. No notifications. */
 final class GarminConnection {
+    static int foregroundOwners;
     private final Activity activity;
     private final SharedPreferences preferences;
     private final Handler handler = new Handler(Looper.getMainLooper());
@@ -27,7 +28,10 @@ final class GarminConnection {
     };
 
     GarminConnection(Activity activity) {
+        GarminBackgroundJob.interruptForForeground();
+        foregroundOwners++;
         this.activity = activity;
+        GarminBackgroundJob.ensureScheduled(activity);
         preferences = activity.getSharedPreferences("garmin", Context.MODE_PRIVATE);
     }
 
@@ -45,6 +49,7 @@ final class GarminConnection {
                     if (item == 2) {
                         preferences.edit().remove("device").apply();
                         selected = null;
+                        GarminBackgroundJob.cancel(activity);
                         stopSdk();
                         toast("Garmin-Verbindung deaktiviert. Bereits gespeicherte Codes bleiben auf der Uhr.");
                     } else if (item == 1 || !preferences.contains("device")) {
@@ -100,6 +105,7 @@ final class GarminConnection {
                     handler.removeCallbacks(timeout);
                     attempt++; sending = false; pending = false;
                     preferences.edit().putLong("device", devices.get(index).getDeviceIdentifier()).apply();
+                    GarminBackgroundJob.ensureScheduled(activity);
                     findSelected(); send(true);
                 }).setNegativeButton("Abbrechen", null).show();
         } catch (Exception exception) { toast("Uhren konnten nicht geladen werden. Garmin Connect öffnen."); }
@@ -176,5 +182,5 @@ final class GarminConnection {
         sending = false; pending = false; ready = false; starting = false;
         if (sdk != null) try { sdk.unregisterAllForEvents(); sdk.shutdown(activity); } catch (Exception ignored) { }
     }
-    void close() { closed = true; stopSdk(); handler.removeCallbacksAndMessages(null); }
+    void close() { if (closed) return; foregroundOwners--; closed = true; stopSdk(); handler.removeCallbacksAndMessages(null); }
 }
