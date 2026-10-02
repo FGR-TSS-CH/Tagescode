@@ -30,8 +30,17 @@ Formatierung. Insbesondere sechsstellige Werte und führende Nullen prüfen.
   31 Tage. Historische Referenzcodes werden nicht übertragen.
 - Die Uhr speichert die Liste lokal; sie wählt anhand ihres eigenen lokalen
   Datums den heutigen Code. Fehlende Tage ergeben „Kein Code“.
-- Die Android-App synchronisiert nur während ihrer Laufzeit im Vordergrund.
-  Daher nach wöchentlichen Dateiänderungen die Handy-App öffnen.
+- Android 1.5.1 imports the selected TXT and sends codes in the background.
+  Open the updated phone app once; a selected watch, persisted file access and
+  Garmin Connect running in the background are required.
+- First attempt: after at least 15 minutes. After success: 24 hours. After
+  import/connection failure: retry after at least 30 minutes. Android power
+  saving may delay jobs. Reopen the app after force-stop.
+- Watch app 1.0.1 closes the full-screen code view automatically after 10 seconds.
+  Configure a button shortcut on the watch if Garmin offers this app as a target.
+  No double-tap binding is added to third-party watch faces.
+- Manual transfer was confirmed on the user's watch. Background delivery and
+  timed return still require physical device acceptance testing.
 - Die Garmin-Hintergrundaufgabe aktualisiert die Complication im beantragten
   Fünf-Minuten-Intervall. Garmin steuert den tatsächlichen Ausführungszeitpunkt;
   insbesondere Mitternacht, Neustart, Energiesparen und Zeitzonenwechsel können
