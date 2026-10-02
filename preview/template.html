@@ -61,6 +61,9 @@ body{background:#577790;color:#000}header h1,header p{color:#fff}.phone{backgrou
 .app-content{padding:0}.app-body{width:384px;padding:32px 22px 0;transform-origin:top center}
 
 #appMenu{border:0;background:none;color:inherit;font-size:11px;padding:0;line-height:14px}#checkStatus{font-size:11px;line-height:14px;margin:5px 0}
+
+/* Reserve Android status (24) and navigation (44) areas before fitting content. */
+.phone-screen{padding-top:24px}.app-content{height:764px}
 </style>
 <body class="dark"><header><h1>Tagescode · interaktive Vorschau</h1><p>Browser-Simulation der Bedienung mit der eingelesenen Codeliste. __SOURCE_NOTE__. Kein Android-Emulator: OneDrive, Installation und echte Sperrbildschirm-Widgets werden hier nicht ausgeführt.</p></header>
 <div id="stageArea"><main><section class="phone" aria-label="App-Vorschau Galaxy S25 FE"><div class="phone-screen"><div class="app-content"><div class="app-body"><img class="logo logo-light" src="__LOGO__" alt="Videojet"><img class="logo logo-dark" src="__LOGO_DARK__" alt="Videojet"><div class="card"><div id="codeLabel">Heutiger Tagescode</div><button id="code" title="Lange drücken zum Kopieren" aria-description="Antippen für Datumsauswahl, lange drücken oder Strg+C zum Kopieren" aria-label="Datum auswählen">------</button><div id="date"></div></div><div class="date-actions"><button class="primary" id="choose">__CALENDAR_ICON__<span>Datum auswählen</span></button><button class="today" id="today" hidden>Heute</button></div><div class="card additional"><div id="additional"></div></div><div class="foot"><div class="credit">__SWISS_BADGE__<span>__DEVELOPED_BY__</span></div><div id="availability"></div><div id="dataStatus"></div><div id="checkStatus" role="status" hidden></div><button id="appMenu" aria-label="App-Menü öffnen">__BUILD_INFO__</button></div></div></div><div class="system-space" aria-hidden="true"></div></div></section>
