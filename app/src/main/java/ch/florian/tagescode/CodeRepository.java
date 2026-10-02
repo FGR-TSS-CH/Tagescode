@@ -27,6 +27,14 @@ final class CodeRepository {
     }
 
     static String getCodeForDate(Context context, int year, int month, int day) {
+        return snapshot(context).getOrDefault(LocalDate.of(year, month + 1, day).toString(), "------");
+    }
+
+    static AvailableCodeDates availableDates(Context context) {
+        return new AvailableCodeDates(snapshot(context).keySet());
+    }
+
+    private static Map<String, String> snapshot(Context context) {
         Map<String, String> codes = cachedCodes;
         if (codes == null) {
             synchronized (LOCK) {
@@ -37,7 +45,7 @@ final class CodeRepository {
                 codes = cachedCodes;
             }
         }
-        return codes.getOrDefault(LocalDate.of(year, month + 1, day).toString(), "------");
+        return codes;
     }
 
     /** Runs off the UI thread. Existing dates are never replaced. */

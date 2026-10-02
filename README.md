@@ -89,3 +89,13 @@ Die App zeigt im unteren Bereich die aktuelle Versionsnummer sowie Monat und Jah
 Beispiel:
 
 `Version 1.3.86 · August 2026`
+
+## Kalender und Sperrbildschirm
+
+Im Kalender sind ausschliesslich Daten mit gespeichertem Tagescode auswählbar. Fehlende Tage bleiben ausgegraut; die Monatsnavigation überspringt Monate ohne Codes. Über die Monatsüberschrift lassen sich Monat und Jahr direkt wählen. Neue Importe sind beim nächsten Öffnen des Kalenders verfügbar.
+
+Das Widget deklariert Unterstützung für Start- und Sperrbildschirm. Auf unterstützten Geräten: Sperrbildschirm lange drücken, Widgets öffnen und Tagescode auswählen. Ob ein Drittanbieter-Widget angeboten wird, bestimmt der jeweilige Android-/Samsung-Widget-Host; die App kann diese Auswahl nicht erzwingen. Die Sperrbildschirm-Anzeige muss auf dem Zielgerät geprüft werden.
+
+## Interaktive Browser-Vorschau
+
+Mit `python preview/build_preview.py` wird `preview/index.html` erzeugt und kann im Browser geöffnet werden. Die Vorschau nutzt die integrierte Codeliste und simuliert Kalender, Anzeige, Hell-/Dunkelmodus und TXT-Import. Importe bleiben nur im Arbeitsspeicher des Browsers. Sie ersetzt keinen Android-Test für OneDrive-Berechtigungen, Hintergrundjobs oder echte Widgets. Nach Änderungen an Layout oder Logik die Vorschau entsprechend mitpflegen.

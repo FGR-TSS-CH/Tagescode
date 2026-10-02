@@ -1,7 +1,6 @@
 package ch.florian.tagescode;
 
 import android.app.Activity;
-import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -52,8 +51,8 @@ public class MainActivity extends Activity {
 
     /*
      * Das erneute Einlesen der PwD.txt erfolgt in einem
-     * Hintergrundthread. Die Bedienoberfläche bleibt
-     * dadurch jederzeit reaktionsfähig.
+     * Hintergrundthread. Die BedienoberflÃ¤che bleibt
+     * dadurch jederzeit reaktionsfÃ¤hig.
      */
     private final ExecutorService codeExecutor =
             Executors.newSingleThreadExecutor();
@@ -64,14 +63,16 @@ public class MainActivity extends Activity {
             );
 
     /*
-     * Jede angeforderte Aktualisierung erhält eine Nummer.
+     * Jede angeforderte Aktualisierung erhÃ¤lt eine Nummer.
      * Nur das Ergebnis der zuletzt angeforderten
-     * Aktualisierung wird auf der Oberfläche angezeigt.
+     * Aktualisierung wird auf der OberflÃ¤che angezeigt.
      */
     private final AtomicInteger reloadRequestNumber =
             new AtomicInteger(0);
 
     private boolean firstResume = true;
+    private LocalDate displayedDate = LocalDate.now();
+    private boolean manuallySelectedDate;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -87,7 +88,7 @@ public class MainActivity extends Activity {
         showBuildInformation();
 
         /*
-         * Beim ersten Öffnen wird die Liste einmal geladen.
+         * Beim ersten Ã–ffnen wird die Liste einmal geladen.
          * Alle folgenden Abfragen erfolgen direkt aus
          * dem Arbeitsspeicher.
          */
@@ -141,8 +142,8 @@ public class MainActivity extends Activity {
 
     @Override
     public boolean onCreateOptionsMenu(android.view.Menu menu) {
-        menu.add(0, 1, 0, "OneDrive-Datei auswählen");
-        menu.add(0, 2, 1, "PwD-Ordner auswählen");
+        menu.add(0, 1, 0, "OneDrive-Datei auswÃ¤hlen");
+        menu.add(0, 2, 1, "PwD-Ordner auswÃ¤hlen");
         return true;
     }
 
@@ -165,20 +166,20 @@ public class MainActivity extends Activity {
     }
 
     private void openCloudFilePicker() {
-        Toast.makeText(this, "Bitte Tagescodes.txt aus OneDrive auswählen.",
+        Toast.makeText(this, "Bitte Tagescodes.txt aus OneDrive auswÃ¤hlen.",
                 Toast.LENGTH_LONG).show();
         try {
             startActivityForResult(CloudCodeFileAccess.createFilePickerIntent(),
                     CloudCodeFileAccess.REQUEST_CLOUD_CODE_FILE);
         } catch (android.content.ActivityNotFoundException exception) {
-            Toast.makeText(this, "Kein Dateiauswahldialog verfügbar.", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Kein Dateiauswahldialog verfÃ¼gbar.", Toast.LENGTH_LONG).show();
         }
     }
 
     private void configureButtons() {
         /*
          * Sowohl das Tippen auf die grosse Zahl als auch
-         * der blaue Button öffnen die Datumsauswahl.
+         * der blaue Button Ã¶ffnen die Datumsauswahl.
          */
         codeView.setOnClickListener(
                 view -> openDatePicker()
@@ -207,7 +208,7 @@ public class MainActivity extends Activity {
         /*
          * onResume wird direkt nach onCreate ebenfalls
          * aufgerufen. Die Anzeige muss dabei nicht ein
-         * zweites Mal vollständig aufgebaut werden.
+         * zweites Mal vollstÃ¤ndig aufgebaut werden.
          */
         if (firstResume) {
             firstResume = false;
@@ -217,7 +218,7 @@ public class MainActivity extends Activity {
         }
 
         /*
-         * Zuerst wird ohne Verzögerung der vorhandene
+         * Zuerst wird ohne VerzÃ¶gerung der vorhandene
          * Cache angezeigt.
          */
         showToday();
@@ -227,35 +228,15 @@ public class MainActivity extends Activity {
         );
 
         /*
-         * Danach wird im Hintergrund geprüft, ob sich
-         * die PwD.txt geändert hat.
+         * Danach wird im Hintergrund geprÃ¼ft, ob sich
+         * die PwD.txt geÃ¤ndert hat.
          */
         reloadCodesInBackground();
     }
 
     private void openDatePicker() {
-        LocalDate today =
-                LocalDate.now();
-
-        DatePickerDialog dialog =
-                new DatePickerDialog(
-                        this,
-                        (view, year, month, dayOfMonth) ->
-                                showSelectedDate(
-                                        year,
-                                        month,
-                                        dayOfMonth
-                                ),
-                        today.getYear(),
-                        today.getMonthValue() - 1,
-                        today.getDayOfMonth()
-                );
-
-        dialog.setOnCancelListener(
-                ignored -> showToday()
-        );
-
-        dialog.show();
+        CodeCalendarDialog.show(this, CodeRepository.availableDates(this), displayedDate,
+                date -> showDate(date, true));
     }
 
     private void showToday() {
@@ -268,38 +249,17 @@ public class MainActivity extends Activity {
         );
     }
 
-    private void showSelectedDate(
-            int year,
-            int zeroBasedMonth,
-            int dayOfMonth
-    ) {
-        try {
-            LocalDate selectedDate =
-                    LocalDate.of(
-                            year,
-                            zeroBasedMonth + 1,
-                            dayOfMonth
-                    );
-
-            showDate(
-                    selectedDate,
-                    true
-            );
-
-        } catch (Exception ignored) {
-            showToday();
-        }
-    }
-
     private void showDate(
             LocalDate date,
             boolean manuallySelected
     ) {
         /*
          * Diese Abfrage erfolgt direkt aus der Map im
-         * Arbeitsspeicher und benötigt kein erneutes
+         * Arbeitsspeicher und benÃ¶tigt kein erneutes
          * Lesen der PwD.txt.
          */
+        displayedDate = date;
+        manuallySelectedDate = manuallySelected;
         String code =
                 CodeRepository.getCodeForDate(
                         this,
@@ -469,12 +429,12 @@ public class MainActivity extends Activity {
                 }
 
                 if (imported < 0) {
-                    Toast.makeText(this, "OneDrive-Datei nicht lesbar. Gespeicherte Codes bleiben verfügbar. "
-                            + "Zum erneuten Auswählen unten auf die Version tippen.", Toast.LENGTH_LONG).show();
+                    Toast.makeText(this, "OneDrive-Datei nicht lesbar. Gespeicherte Codes bleiben verfÃ¼gbar. "
+                            + "Zum erneuten AuswÃ¤hlen unten auf die Version tippen.", Toast.LENGTH_LONG).show();
                 } else if (imported > 0) {
                     Toast.makeText(this, imported + " neue Tagescodes gespeichert.", Toast.LENGTH_SHORT).show();
                 }
-                showToday();
+                showDate(manuallySelectedDate ? displayedDate : LocalDate.now(), manuallySelectedDate);
 
                 TagescodeWidget.updateAllWidgets(
                         this
@@ -504,7 +464,7 @@ public class MainActivity extends Activity {
                             Toast.LENGTH_LONG).show();
                 }
             } else {
-                Toast.makeText(this, "Später auswählen: unten auf die Version tippen.",
+                Toast.makeText(this, "SpÃ¤ter auswÃ¤hlen: unten auf die Version tippen.",
                         Toast.LENGTH_LONG).show();
             }
             return;
@@ -562,7 +522,7 @@ public class MainActivity extends Activity {
     protected void onDestroy() {
         /*
          * Ausstehende Hintergrundaufgaben werden beim
-         * vollständigen Schliessen der Activity beendet.
+         * vollstÃ¤ndigen Schliessen der Activity beendet.
          */
         codeExecutor.shutdownNow();
 
