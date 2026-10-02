@@ -9,6 +9,24 @@ import android.widget.FrameLayout;
 public final class FitScreenLayout extends FrameLayout {
     public FitScreenLayout(Context context, AttributeSet attrs) {
         super(context, attrs);
+        setOnApplyWindowInsetsListener((view, insets) -> {
+            if (android.os.Build.VERSION.SDK_INT >= 30) {
+                android.graphics.Insets safe = insets.getInsetsIgnoringVisibility(
+                        android.view.WindowInsets.Type.systemBars()
+                                | android.view.WindowInsets.Type.displayCutout());
+                setPadding(safe.left, safe.top, safe.right, safe.bottom);
+            } else {
+                setPadding(insets.getSystemWindowInsetLeft(), insets.getSystemWindowInsetTop(),
+                        insets.getSystemWindowInsetRight(), insets.getSystemWindowInsetBottom());
+            }
+            // The child must not apply these insets a second time.
+            return insets.consumeSystemWindowInsets();
+        });
+    }
+
+    @Override protected void onAttachedToWindow() {
+        super.onAttachedToWindow();
+        requestApplyInsets();
     }
 
     @Override protected void onMeasure(int widthSpec, int heightSpec) {
