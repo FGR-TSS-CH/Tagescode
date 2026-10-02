@@ -40,7 +40,7 @@ final class CodeRepository {
             synchronized (LOCK) {
                 if (cachedCodes == null) {
                     try { publish(loadLocal(context)); }
-                    catch (IOException exception) { publish(loadBase(context)); }
+                    catch (IOException exception) { publish(new HashMap<>()); }
                 }
                 codes = cachedCodes;
             }
@@ -48,12 +48,13 @@ final class CodeRepository {
         return codes;
     }
 
-    /** Runs off the UI thread. Existing dates are never replaced. */
+    /** Refresh the local snapshot without accessing any external folder. */
     static void reload(Context context) {
-        try (InputStream input = CodeFolderAccess.openCodeFile(context)) {
-            if (input != null) mergeAndSave(context, CodeFileParser.read(input));
-        } catch (IOException ignored) {
-            // Retain the last complete local snapshot if the source is unavailable.
+        synchronized (LOCK) {
+            try { publish(loadLocal(context)); }
+            catch (IOException ignored) {
+                // Preserve the last usable in-memory snapshot on a storage error.
+            }
         }
     }
 
@@ -75,22 +76,12 @@ final class CodeRepository {
         return new AtomicFile(new File(context.getFilesDir(), "imported_tagescodes.txt"));
     }
 
-    private static Map<String, String> loadBase(Context context) {
-        try (InputStream input = context.getAssets().open("tagescodes.txt")) {
-            return CodeFileParser.read(input);
-        } catch (IOException exception) { return new HashMap<>(); }
-    }
-
     private static Map<String, String> loadLocal(Context context) throws IOException {
         Map<String, String> result;
         try (InputStream input = storage(context).openRead()) {
             result = CodeFileParser.read(input);
         } catch (FileNotFoundException exception) {
             result = new HashMap<>();
-        }
-        // Previously stored dates survive changes to the bundled list, too.
-        for (Map.Entry<String, String> entry : loadBase(context).entrySet()) {
-            result.putIfAbsent(entry.getKey(), entry.getValue());
         }
         return result;
     }

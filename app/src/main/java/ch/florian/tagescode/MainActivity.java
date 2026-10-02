@@ -50,9 +50,9 @@ public class MainActivity extends Activity {
             );
 
     /*
-     * Das erneute Einlesen der PwD.txt erfolgt in einem
-     * Hintergrundthread. Die BedienoberflÃ¤che bleibt
-     * dadurch jederzeit reaktionsfÃ¤hig.
+     * Das erneute Einlesen der lokalen Codeliste erfolgt in einem
+     * Hintergrundthread. Die BedienoberflÃƒÂ¤che bleibt
+     * dadurch jederzeit reaktionsfÃƒÂ¤hig.
      */
     private final ExecutorService codeExecutor =
             Executors.newSingleThreadExecutor();
@@ -63,9 +63,9 @@ public class MainActivity extends Activity {
             );
 
     /*
-     * Jede angeforderte Aktualisierung erhÃ¤lt eine Nummer.
+     * Jede angeforderte Aktualisierung erhÃƒÂ¤lt eine Nummer.
      * Nur das Ergebnis der zuletzt angeforderten
-     * Aktualisierung wird auf der OberflÃ¤che angezeigt.
+     * Aktualisierung wird auf der OberflÃƒÂ¤che angezeigt.
      */
     private final AtomicInteger reloadRequestNumber =
             new AtomicInteger(0);
@@ -83,12 +83,19 @@ public class MainActivity extends Activity {
         );
 
         bindViews();
+        android.widget.ImageView logo = findViewById(R.id.videojetLogo);
+        boolean darkMode = (getResources().getConfiguration().uiMode
+                & android.content.res.Configuration.UI_MODE_NIGHT_MASK)
+                == android.content.res.Configuration.UI_MODE_NIGHT_YES;
+        if (darkMode) logo.clearColorFilter();
+        else logo.setColorFilter(android.graphics.Color.rgb(0, 91, 150),
+                android.graphics.PorterDuff.Mode.SRC_IN);
         configureButtons();
 
         showBuildInformation();
 
         /*
-         * Beim ersten Ã–ffnen wird die Liste einmal geladen.
+         * Beim ersten Ãƒâ€“ffnen wird die Liste einmal geladen.
          * Alle folgenden Abfragen erfolgen direkt aus
          * dem Arbeitsspeicher.
          */
@@ -142,8 +149,8 @@ public class MainActivity extends Activity {
 
     @Override
     public boolean onCreateOptionsMenu(android.view.Menu menu) {
-        menu.add(0, 1, 0, "OneDrive-Datei auswÃ¤hlen");
-        menu.add(0, 2, 1, "PwD-Ordner auswÃ¤hlen");
+        menu.add(0, 1, 0, "OneDrive-Datei auswÃƒÂ¤hlen");
+        menu.add(0, 2, 1, "PwD-Ordner auswÃƒÂ¤hlen");
         return true;
     }
 
@@ -151,11 +158,6 @@ public class MainActivity extends Activity {
     public boolean onOptionsItemSelected(android.view.MenuItem item) {
         if (item.getItemId() == 1) {
             openCloudFilePicker();
-            return true;
-        }
-        if (item.getItemId() == 2) {
-            startActivityForResult(CodeFolderAccess.createFolderPickerIntent(),
-                    CodeFolderAccess.REQUEST_CODE_FOLDER);
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -166,20 +168,20 @@ public class MainActivity extends Activity {
     }
 
     private void openCloudFilePicker() {
-        Toast.makeText(this, "Bitte Tagescodes.txt aus OneDrive auswÃ¤hlen.",
+        Toast.makeText(this, "Bitte Tagescodes.txt aus OneDrive auswÃƒÂ¤hlen.",
                 Toast.LENGTH_LONG).show();
         try {
             startActivityForResult(CloudCodeFileAccess.createFilePickerIntent(),
                     CloudCodeFileAccess.REQUEST_CLOUD_CODE_FILE);
         } catch (android.content.ActivityNotFoundException exception) {
-            Toast.makeText(this, "Kein Dateiauswahldialog verfÃ¼gbar.", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Kein Dateiauswahldialog verfÃƒÂ¼gbar.", Toast.LENGTH_LONG).show();
         }
     }
 
     private void configureButtons() {
         /*
          * Sowohl das Tippen auf die grosse Zahl als auch
-         * der blaue Button Ã¶ffnen die Datumsauswahl.
+         * der blaue Button ÃƒÂ¶ffnen die Datumsauswahl.
          */
         codeView.setOnClickListener(
                 view -> openDatePicker()
@@ -208,7 +210,7 @@ public class MainActivity extends Activity {
         /*
          * onResume wird direkt nach onCreate ebenfalls
          * aufgerufen. Die Anzeige muss dabei nicht ein
-         * zweites Mal vollstÃ¤ndig aufgebaut werden.
+         * zweites Mal vollstÃƒÂ¤ndig aufgebaut werden.
          */
         if (firstResume) {
             firstResume = false;
@@ -218,7 +220,7 @@ public class MainActivity extends Activity {
         }
 
         /*
-         * Zuerst wird ohne VerzÃ¶gerung der vorhandene
+         * Zuerst wird ohne VerzÃƒÂ¶gerung der vorhandene
          * Cache angezeigt.
          */
         showToday();
@@ -228,8 +230,8 @@ public class MainActivity extends Activity {
         );
 
         /*
-         * Danach wird im Hintergrund geprÃ¼ft, ob sich
-         * die PwD.txt geÃ¤ndert hat.
+         * Danach wird im Hintergrund geprÃƒÂ¼ft, ob sich
+         * die lokalen Codeliste geÃƒÂ¤ndert hat.
          */
         reloadCodesInBackground();
     }
@@ -255,8 +257,8 @@ public class MainActivity extends Activity {
     ) {
         /*
          * Diese Abfrage erfolgt direkt aus der Map im
-         * Arbeitsspeicher und benÃ¶tigt kein erneutes
-         * Lesen der PwD.txt.
+         * Arbeitsspeicher und benÃƒÂ¶tigt kein erneutes
+         * Lesen der lokalen Codeliste.
          */
         displayedDate = date;
         manuallySelectedDate = manuallySelected;
@@ -429,8 +431,8 @@ public class MainActivity extends Activity {
                 }
 
                 if (imported < 0) {
-                    Toast.makeText(this, "OneDrive-Datei nicht lesbar. Gespeicherte Codes bleiben verfÃ¼gbar. "
-                            + "Zum erneuten AuswÃ¤hlen unten auf die Version tippen.", Toast.LENGTH_LONG).show();
+                    Toast.makeText(this, "OneDrive-Datei nicht lesbar. Gespeicherte Codes bleiben verfÃƒÂ¼gbar. "
+                            + "Zum erneuten AuswÃƒÂ¤hlen unten auf die Version tippen.", Toast.LENGTH_LONG).show();
                 } else if (imported > 0) {
                     Toast.makeText(this, imported + " neue Tagescodes gespeichert.", Toast.LENGTH_SHORT).show();
                 }
@@ -464,65 +466,19 @@ public class MainActivity extends Activity {
                             Toast.LENGTH_LONG).show();
                 }
             } else {
-                Toast.makeText(this, "SpÃ¤ter auswÃ¤hlen: unten auf die Version tippen.",
+                Toast.makeText(this, "SpÃƒÂ¤ter auswÃƒÂ¤hlen: unten auf die Version tippen.",
                         Toast.LENGTH_LONG).show();
             }
             return;
         }
 
-        if (
-                requestCode
-                        != CodeFolderAccess
-                        .REQUEST_CODE_FOLDER
-        ) {
-            return;
-        }
-
-        if (resultCode != RESULT_OK) {
-            Toast.makeText(
-                    this,
-                    "Der Ordner wurde nicht freigegeben.",
-                    Toast.LENGTH_LONG
-            ).show();
-
-            return;
-        }
-
-        boolean saved =
-                CodeFolderAccess.saveFolderAccess(
-                        this,
-                        data
-                );
-
-        if (saved) {
-            /*
-             * Der alte Cache wird verworfen und die neu
-             * freigegebene PwD.txt im Hintergrund geladen.
-             */
-            CodeRepository.invalidate();
-            reloadCodesInBackground();
-
-            Toast.makeText(
-                    this,
-                    "PwD-Ordner wurde gespeichert.",
-                    Toast.LENGTH_SHORT
-            ).show();
-
-        } else {
-            Toast.makeText(
-                    this,
-                    "Der Ordnerzugriff konnte "
-                            + "nicht gespeichert werden.",
-                    Toast.LENGTH_LONG
-            ).show();
-        }
     }
 
     @Override
     protected void onDestroy() {
         /*
          * Ausstehende Hintergrundaufgaben werden beim
-         * vollstÃ¤ndigen Schliessen der Activity beendet.
+         * vollstÃƒÂ¤ndigen Schliessen der Activity beendet.
          */
         codeExecutor.shutdownNow();
 
