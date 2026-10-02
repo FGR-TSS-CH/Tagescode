@@ -1,28 +1,16 @@
-# Preview visual verification
+# Version 1.4.1 verification
 
 final result: passed
 
-Source: C:/Users/FLORIA~1.GRO/AppData/Local/Temp/codex-clipboard-2619f202-a667-4bf5-8986-039496a646f0.png
-Implementation: ../../outputs/Tagescode-Handy-Vorschau.png
-URL: http://127.0.0.1:8876/Tagescode-Vorschau.html
-Viewport and screenshot: 885 x 884 browser pixels. Source: 709 x 1536 pixels.
-Phone CSS viewport: 384 x 832, same 19.5:9 ratio. Source measurements divided by 709/384; browser stage proportionally fitted to available height. Compared app regions in both images together, excluding browser controls, outer bezel, and Android-owned system chrome.
-State: dark, 2 October 2026, today's code. Also inspected light theme.
+Scope: user-approved refinements to the prior screenshot-matched layout in both Android and browser preview. Blue primary button (#005D9C), softer dark surfaces, date-dependent code label, last successful import plus latest available date, and long-press copy.
 
-Findings and fixes:
-- Previous preview had smaller code, rows and typography, short cards and excess footer spacing. Matched Android layout dimensions: 22px side inset, 225x72 logo, 168px code card, 68px code, 18px date, 56px button, 51px rows and 19px section title. Embedded Roboto with its license; reused original Android calendar vector and Swiss badge.
-- First verification found 3px internal overflow. Increased app viewport to 788px with 44px reserved bottom area; final measured scrollHeight equals clientHeight (788), page scrollHeight equals viewport height (884).
+Browser evidence: ../../outputs/Tagescode-V1.4.1-Vorschau.png, viewport 885 x 884, logical phone 384 x 832. Checked both themes. Content viewport and scrollHeight both 788px in the today state. Footer and all four rows fit. Original logos remain sharp and use the correct theme variant. Typography and spacing retained, with modest spacing reductions to accommodate the label and status. Brand-blue button uses white text.
 
-Required surfaces:
-- Typography: Roboto, Android font sizes and weights, correct single-line dates and rows. Samsung font rendering may differ slightly (P3).
-- Spacing: card top 122px and primary button top 310px match normalized reference. Additional section and footer follow native margins. No normal-state clipping.
-- Colors: intentionally use user-requested Videojet 2024 palette from current app 1.3.112 rather than superseded 1.3.106 screenshot. Yellow CTA, original white/black wordmarks by theme.
-- Images: original supplied logo files retain transparency/aspect ratio; original app vector paths reused without approximation.
-- Copy: same date formatting, four extra codes, attribution and current build footer.
+Interactions verified: choose October 3, label changes to selected code; Today restores today's label/date; theme switch works; copy action resolves with success confirmation. Browser clipboard readback through the automation bridge returned empty, so actual OS clipboard content remains unverified. Native Android long-press uses ClipboardManager; physical-device interaction has not been tested. No browser console errors.
 
-Full-view evidence: source and saved implementation opened together. Focused comparison: code/date, row typography and footer all readable in those views; separate crops unnecessary.
-Interaction checks: calendar opens; missing October dates disabled; selecting October 3 updates date; Today restores October 2; both themes show the appropriate logo. Browser console error log empty.
+Data status: Android timestamp records successful nonempty parses after cache save, including successful reads with no new dates. Failures and empty files do not update it. Preview uses its own snapshot/import time, not the phone's timestamp. Last available date is computed from the imported code set; no claim of uninterrupted coverage. VersionName is fixed at 1.4.1, while versionCode continues increasing with CI runs.
 
-Expected limitations: Android status/navigation icons are not simulated; browser is an interactive layout preview, not an Android emulator. Selecting another date adds the native Today control and allows internal content scrolling, as Android does. The browser page itself remains fitted.
+Validation: local Java compilation against Android API succeeds; all 9 existing parser/date tests pass. GitHub build run 37018468658 is checked separately before release handoff.
 
-Checklist completed: layout matching, original assets, typography, light/dark, calendar, overflow verification. No remaining P0/P1/P2 issue within this scope.
+No actionable P0/P1/P2 visual findings. Browser and Samsung typography can vary slightly. Android system chrome is not emulated.
+
