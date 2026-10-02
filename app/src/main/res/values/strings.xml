@@ -39,4 +39,7 @@
     <string name="new_codes_import_unknown">Neue Codes importiert: noch nicht erfasst</string>
     <string name="reference_codes">Referenzcodes</string>
     <string name="missing_today">Für heute fehlt ein Tagescode</string>
+    <string name="check_running">Datei wird geprüft …</string>
+    <string name="check_failed">Prüfung fehlgeschlagen – gespeicherte Codes werden verwendet.</string>
+    <string name="check_up_to_date">Prüfung erfolgreich. Keine neuen Codes vorhanden.</string>
 </resources>

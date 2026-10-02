@@ -60,17 +60,30 @@ final class CodeRepository {
 
     /** Returns -1 on access/read/write failure, otherwise the number of new dates. */
     static int importCloudCodes(Context context) {
-        try (InputStream input = CloudCodeFileAccess.openCodeFile(context)) {
-            if (input == null) return 0;
-            Map<String, String> incoming = CodeFileParser.read(input);
-            if (incoming.isEmpty()) return -1;
-            int added = mergeAndSave(context, incoming);
-            context.getSharedPreferences("code_import_status", Context.MODE_PRIVATE)
-                    .edit().putLong("last_success", System.currentTimeMillis()).apply();
-            return added;
-        } catch (IOException exception) {
-            return -1;
+        synchronized (LOCK) {
+            try {
+                Map<String, String> incoming;
+                try (InputStream input = CloudCodeFileAccess.openCodeFile(context)) {
+                    if (input == null) throw new IOException("No source file selected");
+                    incoming = CodeFileParser.read(input);
+                }
+                if (incoming.isEmpty()) throw new IOException("No valid codes");
+                int added = mergeAndSave(context, incoming);
+                context.getSharedPreferences("code_import_status", Context.MODE_PRIVATE)
+                        .edit().putLong("last_success", System.currentTimeMillis())
+                        .putBoolean("last_failed", false).apply();
+                return added;
+            } catch (IOException | SecurityException exception) {
+                context.getSharedPreferences("code_import_status", Context.MODE_PRIVATE)
+                        .edit().putBoolean("last_failed", true).apply();
+                return -1;
+            }
         }
+    }
+
+    static boolean lastCheckFailed(Context context) {
+        return context.getSharedPreferences("code_import_status", Context.MODE_PRIVATE)
+                .getBoolean("last_failed", false);
     }
 
     static long lastSuccessfulImport(Context context) {

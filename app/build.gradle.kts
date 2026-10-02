@@ -7,7 +7,7 @@ val githubRunNumber =
     System.getenv("GITHUB_RUN_NUMBER")?.toIntOrNull() ?: 1
 
 // User-facing release version is independent of the CI build counter.
-val releaseVersionName = "1.4.5"
+val releaseVersionName = "1.4.6"
 
 val automaticBuildDate =
     ZonedDateTime.now(ZoneId.of("Europe/Zurich"))

@@ -24,6 +24,8 @@ public class MainActivity extends Activity {
     private TextView codeLabelView;
     private TextView dataStatusView;
     private TextView availabilityView;
+    private TextView checkStatusView;
+    private boolean manualCheckPending;
 
     private TextView yesterdayCodeView;
     private TextView code2000View;
@@ -104,6 +106,7 @@ public class MainActivity extends Activity {
         codeLabelView = findViewById(R.id.codeLabelView);
         dataStatusView = findViewById(R.id.dataStatusView);
         availabilityView = findViewById(R.id.availabilityView);
+        checkStatusView = findViewById(R.id.checkStatusView);
         codeView =
                 findViewById(R.id.codeView);
 
@@ -148,12 +151,22 @@ public class MainActivity extends Activity {
 
     @Override
     public boolean onCreateOptionsMenu(android.view.Menu menu) {
-        menu.add(0, 1, 0, "OneDrive-Datei auswählen");
+        menu.add(0, 2, 0, "Jetzt prüfen");
+        menu.add(0, 1, 1, "OneDrive-Datei auswählen");
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(android.view.MenuItem item) {
+        if (item.getItemId() == 2) {
+            if (!manualCheckPending) {
+                manualCheckPending = true;
+                checkStatusView.setText(R.string.check_running);
+                checkStatusView.setVisibility(View.VISIBLE);
+                reloadCodesInBackground();
+            }
+            return true;
+        }
         if (item.getItemId() == 1) {
             openCloudFilePicker();
             return true;
@@ -384,6 +397,9 @@ public class MainActivity extends Activity {
     }
 
     private void updateDataStatus() {
+        checkStatusView.setText(manualCheckPending ? R.string.check_running : R.string.check_failed);
+        checkStatusView.setVisibility(manualCheckPending || CodeRepository.lastCheckFailed(this)
+                ? View.VISIBLE : View.GONE);
         long importedAt = CodeRepository.lastSuccessfulImport(this);
         String imported = importedAt == 0 ? getString(R.string.import_unknown)
                 : getString(R.string.last_import_format,
@@ -468,6 +484,11 @@ public class MainActivity extends Activity {
                     return;
                 }
 
+                boolean wasManualCheck = manualCheckPending;
+                manualCheckPending = false;
+                if (wasManualCheck && imported == 0) {
+                    Toast.makeText(this, R.string.check_up_to_date, Toast.LENGTH_SHORT).show();
+                }
                 if (imported < 0) {
                     Toast.makeText(this, "OneDrive-Datei nicht lesbar. Gespeicherte Codes bleiben verfügbar. "
                             + "Zum erneuten Auswählen unten auf die Version tippen.", Toast.LENGTH_LONG).show();
