@@ -8,9 +8,29 @@ html,body{height:100%;overflow:hidden}body{height:100dvh;display:flex;flex-direc
 
 /* Videojet 2024 corporate palette; original logos are never recoloured. */
 body{background:#577790;color:#000}header h1,header p{color:#fff}.phone{background:#fff;border-color:#333}.card,.controls,dialog{background:#fff;border-color:#577790}.row{background:#fff;border:1px solid #577790}.additional h2{color:#577790}#date,.foot,.hint,.device-note,.controls p{color:#333}.primary{background:#ffcc00;color:#000}.primary:active{background:#00a4de}.widget{background:#577790;color:#fff}button{border-color:#577790}button:focus-visible,select:focus-visible{outline-color:#005d9c}.grid button{background:#fff;border:1px solid #577790}.grid .selected{background:#005d9c;color:#fff}.logo{filter:none}.logo-dark{display:none}.dark .logo-light{display:none}.dark .logo-dark{display:block}.dark{background:#000;color:#fff}.dark .phone{background:#000}.dark .card,.dark .controls,.dark dialog,.dark button{background:#333;color:#fff;border-color:#577790}.dark .row,.dark .grid button{background:#000;color:#fff}.dark .primary{background:#ffcc00;color:#000}.dark .primary:active{background:#00a4de}.dark .grid .selected{background:#005d9c}.dark .additional h2,.dark p,.dark #date,.dark .foot,.dark .hint,.dark .device-note{color:#fff}.dark .widget{background:#577790}
+
+/* Galaxy S25 FE: screenshot measured at 384 x 832 logical pixels.
+   App dimensions follow activity_main.xml; outer scaling only fits the browser. */
+@font-face{font-family:Roboto;src:url('__FONT__') format('truetype');font-weight:100 900;font-display:swap}
+.phone{width:400px}.phone-screen{position:relative;width:384px;height:832px;padding:0;font-family:Roboto,Arial,sans-serif;display:block}
+.app-content{height:788px;padding:26px 22px 0;overflow-y:auto;scrollbar-width:none}.app-content::-webkit-scrollbar{display:none}
+.phone-screen .logo{width:225px;height:72px;margin:0 auto 24px}
+.phone-screen .card{padding:28px 18px 22px;border-radius:24px;height:168px}
+#code{font-family:Roboto,Arial,sans-serif;font-size:68px;font-weight:700;letter-spacing:.06em;line-height:82px;border-radius:0}
+#date{font-size:18px;line-height:24px;margin-top:12px;white-space:nowrap}
+.phone-screen .primary{display:flex;align-items:center;justify-content:center;gap:11px;margin-top:20px;height:56px;border-radius:16px;font-size:17px;font-weight:500}
+.calendar-icon{width:23px;height:23px;flex:none}
+.phone-screen .additional{height:auto;margin-top:24px;padding:18px;text-align:left;border-radius:20px}
+.additional h2{font-size:19px;line-height:25px;font-weight:700;margin:0 0 16px;color:inherit}
+.phone-screen .row{height:51px;padding:14px;line-height:23px;font-size:17px;font-weight:500;margin-top:10px;border:0;border-radius:14px;white-space:nowrap}
+.phone-screen .row:first-child{margin-top:0}
+.phone-screen .foot{margin:26px 0 0;padding:8px 0 4px;font-size:11px;line-height:14px}
+.credit{font-size:13px;font-weight:500;line-height:25px;margin-bottom:7px}
+.phone-screen .today{height:48px;min-width:140px;margin:12px auto 0}
+.system-space{height:44px;background:#000}
 </style>
-<header><h1>Tagescode · interaktive Vorschau</h1><p>Browser-Simulation der Bedienung mit der eingelesenen Codeliste. __SOURCE_NOTE__. Kein Android-Emulator: OneDrive, Installation und echte Sperrbildschirm-Widgets werden hier nicht ausgeführt.</p></header>
-<div id="stageArea"><main><section class="phone" aria-label="App-Vorschau Galaxy S25 FE"><div class="phone-screen"><img class="logo logo-light" src="__LOGO__" alt="Videojet"><img class="logo logo-dark" src="__LOGO_DARK__" alt="Videojet"><div class="card"><button id="code" aria-label="Datum auswählen">------</button><div id="date"></div></div><button class="primary" id="choose">▦ Datum auswählen</button><button class="today" id="today" hidden>Heute</button><div class="card additional"><h2>Weitere Tagescodes</h2><div id="additional"></div></div><div class="foot"><div class="credit">__SWISS_BADGE__<span>__DEVELOPED_BY__</span></div>__BUILD_INFO__</div></div></section>
+<body class="dark"><header><h1>Tagescode · interaktive Vorschau</h1><p>Browser-Simulation der Bedienung mit der eingelesenen Codeliste. __SOURCE_NOTE__. Kein Android-Emulator: OneDrive, Installation und echte Sperrbildschirm-Widgets werden hier nicht ausgeführt.</p></header>
+<div id="stageArea"><main><section class="phone" aria-label="App-Vorschau Galaxy S25 FE"><div class="phone-screen"><div class="app-content"><img class="logo logo-light" src="__LOGO__" alt="Videojet"><img class="logo logo-dark" src="__LOGO_DARK__" alt="Videojet"><div class="card"><button id="code" aria-label="Datum auswählen">------</button><div id="date"></div></div><button class="primary" id="choose">__CALENDAR_ICON__<span>Datum auswählen</span></button><button class="today" id="today" hidden>Heute</button><div class="card additional"><h2>Weitere Tagescodes</h2><div id="additional"></div></div><div class="foot"><div class="credit">__SWISS_BADGE__<span>__DEVELOPED_BY__</span></div>__BUILD_INFO__</div></div><div class="system-space" aria-hidden="true"></div></div></section>
 <aside class="controls"><h2>Galaxy S25 FE</h2><p class="device-note">Display: 1080 × 2340 · 19,5:9<br>Proportional ans Browserfenster angepasst.</p><h2>Hier testen</h2><button id="theme">Hell / Dunkel</button><label for="testday">Heutiges Datum simulieren</label><input id="testday" type="date"><label for="import">Eigene Tagescodes.txt testen</label><input id="import" type="file" accept=".txt,text/plain"><p id="status" role="status">Nur im Speicher dieser Vorschau; kein Upload und keine Änderung der App-Daten.</p><h2>Widget-Anzeige</h2><p>Zeigt immer den simulierten heutigen Code. Nur Darstellung, keine Zusage zur Samsung-Sperrbildschirm-Unterstützung.</p><div class="widget"><strong id="widgetCode"></strong><small id="widgetDate"></small></div></aside></main></div>
 <dialog id="calendar"><h2>Datum auswählen</h2><div class="nav"><button id="prev" aria-label="Vorheriger Monat">‹</button><select id="month" aria-label="Monat und Jahr"></select><button id="next" aria-label="Nächster Monat">›</button></div><div class="grid" id="days"></div><p class="hint">Nur Tage mit Tagescode sind auswählbar.</p><button class="cancel" id="cancel">Abbrechen</button></dialog>
 <script>

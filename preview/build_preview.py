@@ -20,13 +20,19 @@ badge=ET.Element('svg', {'xmlns':'http://www.w3.org/2000/svg', 'class':'swiss-ba
 for path in vector.findall('path'):
  ET.SubElement(badge,'path',{'fill':path.get(android+'fillColor'),'d':path.get(android+'pathData')})
 swiss_badge=ET.tostring(badge,encoding='unicode')
+calendar_vector=ET.parse(root/'app/src/main/res/drawable/ic_calendar.xml').getroot()
+calendar=ET.Element('svg', {'xmlns':'http://www.w3.org/2000/svg','class':'calendar-icon','viewBox':'0 0 24 24','aria-hidden':'true'})
+for path in calendar_vector.findall('path'):
+ ET.SubElement(calendar,'path',{'fill':'currentColor','d':path.get(android+'pathData')})
+calendar_icon=ET.tostring(calendar,encoding='unicode')
+font='data:font/ttf;base64,'+base64.b64encode((root/'preview/assets/Roboto.ttf').read_bytes()).decode()
 strings={element.get('name'):''.join(element.itertext()).strip() for element in ET.parse(root/'app/src/main/res/values/strings.xml').getroot()}
 version=sys.argv[3] if len(sys.argv)>3 else 'Vorschau'
 months=['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember']
 today=datetime.date.today()
 build_date=f'{months[today.month-1]} {today.year}'
 build_info=strings['build_info_format'].replace('%1$s',version).replace('%2$s',build_date)
-html=(root/'preview/template.html').read_text(encoding='utf-8-sig').replace('__DEVELOPED_BY__',html_module.escape(strings['developed_by'])).replace('__BUILD_INFO__',html_module.escape(build_info)).replace('__LOGO__',logo).replace('__LOGO_DARK__',logo_dark).replace('__SWISS_BADGE__',swiss_badge).replace('__CODES__',json.dumps(codes)).replace('__SOURCE_NOTE__',f'{len(codes):,} Tagescodes · Stand {datetime.datetime.now():%d.%m.%Y %H:%M}'.replace(',', '.'))
+html=(root/'preview/template.html').read_text(encoding='utf-8-sig').replace('__FONT__',font).replace('__CALENDAR_ICON__',calendar_icon).replace('__DEVELOPED_BY__',html_module.escape(strings['developed_by'])).replace('__BUILD_INFO__',html_module.escape(build_info)).replace('__LOGO__',logo).replace('__LOGO_DARK__',logo_dark).replace('__SWISS_BADGE__',swiss_badge).replace('__CODES__',json.dumps(codes)).replace('__SOURCE_NOTE__',f'{len(codes):,} Tagescodes · Stand {datetime.datetime.now():%d.%m.%Y %H:%M}'.replace(',', '.'))
 output=Path(sys.argv[1]) if len(sys.argv)>1 else root/'preview/index.html'
 output.write_text(html,encoding='utf-8')
 print(json.dumps({'output':str(output.resolve()),'source':str(source),'count':len(codes),'first':min(codes) if codes else None,'last':max(codes) if codes else None}))
