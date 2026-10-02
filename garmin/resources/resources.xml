@@ -1,0 +1,16 @@
+<resources>
+  <strings>
+    <string id="AppName">Tagescode</string>
+    <string id="ShortLabel">Code</string>
+  </strings>
+  <drawables>
+    <bitmap id="CodeIcon" filename="code.svg"/>
+    <bitmap id="LauncherIcon" filename="launcher.svg"/>
+  </drawables>
+  <complications>
+    <complication id="0" access="public" longLabel="@Strings.AppName"
+        shortLabel="@Strings.ShortLabel" icon="@Drawables.CodeIcon" glancePreview="true">
+      <faceIt defaultText="@Strings.AppName"/>
+    </complication>
+  </complications>
+</resources>

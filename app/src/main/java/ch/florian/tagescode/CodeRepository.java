@@ -34,6 +34,10 @@ final class CodeRepository {
         return new AvailableCodeDates(snapshot(context).keySet());
     }
 
+    static Map<String, Object> garminPacket(Context context) {
+        return GarminCodePacket.create(snapshot(context), LocalDate.now());
+    }
+
     private static Map<String, String> snapshot(Context context) {
         Map<String, String> codes = cachedCodes;
         if (codes == null) {

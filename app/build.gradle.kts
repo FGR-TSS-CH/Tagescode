@@ -7,7 +7,7 @@ val githubRunNumber =
     System.getenv("GITHUB_RUN_NUMBER")?.toIntOrNull() ?: 1
 
 // User-facing release version is independent of the CI build counter.
-val releaseVersionName = "1.4.8"
+val releaseVersionName = "1.5.0"
 
 val automaticBuildDate =
     ZonedDateTime.now(ZoneId.of("Europe/Zurich"))
@@ -70,6 +70,7 @@ android {
     }
 }
 dependencies {
+    implementation("com.garmin.connectiq:ciq-companion-app-sdk:2.2.0@aar")
     implementation("androidx.documentfile:documentfile:1.1.0")
     testImplementation("junit:junit:4.13.2")
 }

@@ -26,6 +26,7 @@ public class MainActivity extends Activity {
     private TextView availabilityView;
     private TextView checkStatusView;
     private boolean manualCheckPending;
+    private GarminConnection garmin;
 
     private TextView yesterdayCodeView;
     private TextView code2000View;
@@ -96,6 +97,7 @@ public class MainActivity extends Activity {
         );
 
         bindViews();
+        garmin = new GarminConnection(this);
         configureButtons();
 
         showBuildInformation();
@@ -161,11 +163,13 @@ public class MainActivity extends Activity {
     public boolean onCreateOptionsMenu(android.view.Menu menu) {
         menu.add(0, 2, 0, "Jetzt prüfen");
         menu.add(0, 1, 1, "OneDrive-Datei auswählen");
+        menu.add(0, 3, 2, "Garmin-Uhr");
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(android.view.MenuItem item) {
+        if (item.getItemId() == 3) { garmin.showMenu(); return true; }
         if (item.getItemId() == 2) {
             if (!manualCheckPending) {
                 manualCheckPending = true;
@@ -508,6 +512,7 @@ public class MainActivity extends Activity {
                 TagescodeWidget.updateAllWidgets(
                         this
                 );
+                garmin.sync();
             });
         });
     }
@@ -548,6 +553,7 @@ public class MainActivity extends Activity {
          * vollständigen Schliessen der Activity beendet.
          */
         codeExecutor.shutdownNow();
+        if (garmin != null) garmin.close();
 
         super.onDestroy();
     }
