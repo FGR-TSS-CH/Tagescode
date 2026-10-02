@@ -63,6 +63,39 @@
 
         </receiver>
 
+        <receiver
+            android:name=".CompactTagescodeWidget"
+            android:label="@string/widget_compact_name"
+            android:exported="true">
+
+            <intent-filter>
+
+                <action
+                    android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+
+                <action
+                    android:name="android.intent.action.DATE_CHANGED" />
+
+                <action
+                    android:name="android.intent.action.TIME_SET" />
+
+                <action
+                    android:name="android.intent.action.TIMEZONE_CHANGED" />
+
+                <action
+                    android:name="android.intent.action.BOOT_COMPLETED" />
+
+                <action
+                    android:name="ch.florian.tagescode.REFRESH" />
+
+            </intent-filter>
+
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/tagescode_widget_compact_info" />
+
+        </receiver>
+
 
         <!-- Tägliche Aktualisierung um 00:01 Uhr -->
         <receiver

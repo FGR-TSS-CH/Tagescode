@@ -42,4 +42,6 @@
     <string name="check_running">Datei wird geprüft …</string>
     <string name="check_failed">Prüfung fehlgeschlagen – gespeicherte Codes werden verwendet.</string>
     <string name="check_up_to_date">Prüfung erfolgreich. Keine neuen Codes vorhanden.</string>
+    <string name="widget_compact_name">Tagescode kompakt</string>
+    <string name="widget_compact_description">Nur der Tagescode, transparent mit dunkelgrauer Schrift für helle Hintergründe</string>
 </resources>

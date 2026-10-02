@@ -122,6 +122,7 @@ public class TagescodeWidget extends AppWidgetProvider {
                     appWidgetId
             );
         }
+        CompactTagescodeWidget.updateCompactWidgets(context);
     }
 
     private static void updateAppWidget(
