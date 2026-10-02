@@ -23,6 +23,7 @@ public class MainActivity extends Activity {
     private TextView dateView;
     private TextView codeLabelView;
     private TextView dataStatusView;
+    private TextView availabilityView;
 
     private TextView yesterdayCodeView;
     private TextView code2000View;
@@ -102,6 +103,7 @@ public class MainActivity extends Activity {
     private void bindViews() {
         codeLabelView = findViewById(R.id.codeLabelView);
         dataStatusView = findViewById(R.id.dataStatusView);
+        availabilityView = findViewById(R.id.availabilityView);
         codeView =
                 findViewById(R.id.codeView);
 
@@ -395,7 +397,12 @@ public class MainActivity extends Activity {
                 : getString(R.string.new_codes_import_format,
                     new java.text.SimpleDateFormat("dd.MM.yyyy, HH:mm", Locale.GERMANY)
                         .format(new java.util.Date(newCodesAt)));
-        dataStatusView.setText(imported + "\n" + newCodes + "\n" + available);
+        boolean missingToday = !CodeRepository.getCodeForToday(this).matches("[0-9]{6}");
+        availabilityView.setText(missingToday
+                ? getString(R.string.missing_today) + "\n" + available : available);
+        availabilityView.setBackgroundColor(missingToday ? 0xFFFFCC00 : android.graphics.Color.TRANSPARENT);
+        availabilityView.setTextColor(missingToday ? android.graphics.Color.BLACK : getColor(R.color.text_primary));
+        dataStatusView.setText(newCodes + "\n" + imported);
     }
 
     private void showBuildInformation() {

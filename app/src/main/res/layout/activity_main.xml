@@ -128,25 +128,27 @@
             android:orientation="vertical"
             android:padding="18dp">
 
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:fontFamily="sans-serif-medium"
-                android:text="@string/additional_codes"
-                android:textColor="@color/text_primary"
-                android:textSize="19sp"
-                android:textStyle="bold" />
+
 
             <TextView
                 android:id="@+id/yesterdayCodeView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
                 android:background="@drawable/code_row_background"
                 android:fontFamily="sans-serif-medium"
                 android:padding="12dp"
                 android:textColor="@color/text_primary"
                 android:textSize="17sp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:fontFamily="sans-serif-medium"
+                android:text="@string/reference_codes"
+                android:textColor="@color/text_primary"
+                android:textSize="19sp"
+                android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/code2000View"
@@ -214,6 +216,15 @@
 
     </LinearLayout>
 
+    <TextView
+        android:id="@+id/availabilityView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="7dp"
+        android:gravity="center"
+        android:textSize="13sp"
+        android:textStyle="bold"
+        android:textColor="@color/text_primary" />
     <TextView
         android:id="@+id/dataStatusView"
         android:layout_width="match_parent"
