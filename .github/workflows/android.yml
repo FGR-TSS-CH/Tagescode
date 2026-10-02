@@ -41,10 +41,20 @@ jobs:
       - name: APK erstellen
         run: gradle :app:testDebugUnitTest :app:assembleDebug --stacktrace
 
+      - name: APK mit Versionsnummer benennen
+        shell: python
+        run: |
+          import json
+          from pathlib import Path
+          folder = Path("app/build/outputs/apk/debug")
+          metadata = json.loads((folder / "output-metadata.json").read_text())
+          apk = metadata["elements"][0]
+          (folder / apk["outputFile"]).rename(folder / f"Tagescode_V{apk['versionName']}.apk")
+
       - name: APK zum Herunterladen bereitstellen
         uses: actions/upload-artifact@v4
         with:
           name: Tagescode-APK
-          path: app/build/outputs/apk/debug/app-debug.apk
+          path: app/build/outputs/apk/debug/Tagescode_V*.apk
           if-no-files-found: error
           retention-days: 30

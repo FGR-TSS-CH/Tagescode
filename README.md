@@ -34,7 +34,7 @@ In der App werden zusätzlich folgende Tagescodes angezeigt:
 2. In GitHub oben **Actions** öffnen.
 3. Den Workflow **Android APK erstellen** auswählen.
 4. Nach erfolgreichem Build unten den Artifact-Download **Tagescode-APK** herunterladen.
-5. Die ZIP entpacken und `app-debug.apk` auf dem Android-Handy installieren.
+5. Die ZIP entpacken und die APK mit dem Namen `Tagescode_V<Versionsnummer>.apk` auf dem Android-Handy installieren (zum Beispiel `Tagescode_V1.3.106.apk`).
 
 Die GitHub Action verwendet eine online installierte Gradle-Version. Ein lokaler Gradle Wrapper ist deshalb für den Online-Build nicht erforderlich.
 
