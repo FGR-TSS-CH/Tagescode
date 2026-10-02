@@ -28,6 +28,7 @@ public class GarminBackgroundJob extends JobService {
     private JobParameters parameters;
     private ConnectIQ sdk;
     private boolean cloudSucceeded;
+    private boolean transferConfirmed;
     private int generation;
     private final Runnable timeout = () -> finish(false);
 
@@ -59,6 +60,7 @@ public class GarminBackgroundJob extends JobService {
 
     @Override public boolean onStartJob(JobParameters params) {
         if (!getSharedPreferences("garmin", MODE_PRIVATE).contains("device")) return false;
+        transferConfirmed = false;
         parameters = params;
         active = this;
         int token = ++generation;
@@ -111,6 +113,8 @@ public class GarminBackgroundJob extends JobService {
                             sdk.sendMessage(device, app, CodeRepository.garminPacket(GarminBackgroundJob.this),
                                 (watch, sentApp, status) -> dispatch(token, () -> {
                                     boolean sent = status == ConnectIQ.IQMessageStatus.SUCCESS;
+                                    transferConfirmed = sent;
+                                    if (sent) GarminTransferStatus.record(GarminBackgroundJob.this, true, "Codes im Hintergrund an die Uhr gesendet.");
                                     if (sent) getSharedPreferences("garmin", MODE_PRIVATE).edit()
                                         .putLong("last_background_transfer", System.currentTimeMillis()).apply();
                                     finish(sent && cloudSucceeded);
@@ -131,6 +135,8 @@ public class GarminBackgroundJob extends JobService {
     private void finish(boolean success) {
         JobParameters done = parameters;
         if (done == null) return;
+        if (!transferConfirmed && GarminConnection.foregroundOwners == 0)
+            GarminTransferStatus.record(this, false, "Hintergrundübertragung nicht bestätigt. Uhr und Garmin Connect prüfen; erneuter Versuch folgt.");
         cleanup();
         jobFinished(done, false);
         schedule(this, success ? DAILY : RETRY);

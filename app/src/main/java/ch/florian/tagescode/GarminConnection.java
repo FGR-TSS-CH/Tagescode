@@ -44,9 +44,13 @@ final class GarminConnection {
 
     void showMenu() {
         new AlertDialog.Builder(activity).setTitle("Garmin Tagescode")
-            .setItems(new String[]{"Codes jetzt übertragen", "Uhr auswählen", "Verbindung deaktivieren"},
+            .setItems(new String[]{"Codes jetzt übertragen", "Uhr auswählen", "Verbindung deaktivieren", "Übertragungsstatus"},
                 (dialog, item) -> {
-                    if (item == 2) {
+                    if (item == 3) {
+                        new AlertDialog.Builder(activity).setTitle("Garmin-Übertragung")
+                            .setMessage(GarminTransferStatus.describe(activity))
+                            .setPositiveButton("Schliessen", null).show();
+                    } else if (item == 2) {
                         preferences.edit().remove("device").apply();
                         selected = null;
                         GarminBackgroundJob.cancel(activity);
@@ -78,6 +82,7 @@ final class GarminConnection {
                 public void onInitializeError(ConnectIQ.IQSdkErrorStatus status) { ui(() -> {
                     if (currentSession != session) return;
                     starting = false; ready = false;
+                    GarminTransferStatus.record(activity, false, "Garmin Connect nicht verfügbar.");
                     if (chooseWhenReady || manualSend) toast("Garmin Connect installieren bzw. öffnen und die Uhr dort verbinden.");
                     chooseWhenReady = false; manualSend = false;
                 }); }
@@ -87,6 +92,7 @@ final class GarminConnection {
             });
         } catch (RuntimeException exception) {
             starting = false;
+            GarminTransferStatus.record(activity, false, "Garmin Connect nicht verfügbar.");
             if (chooseWhenReady || manualSend) toast("Garmin Connect ist momentan nicht verfügbar.");
             chooseWhenReady = false; manualSend = false;
         }
@@ -104,7 +110,11 @@ final class GarminConnection {
                 .setItems(names, (dialog, index) -> {
                     handler.removeCallbacks(timeout);
                     attempt++; sending = false; pending = false;
-                    preferences.edit().putLong("device", devices.get(index).getDeviceIdentifier()).apply();
+                    long newDevice = devices.get(index).getDeviceIdentifier();
+                    if (preferences.getLong("device", -1) != newDevice) preferences.edit()
+                        .remove("transfer_success").remove("transfer_attempt").remove("transfer_detail")
+                        .remove("transfer_ok").remove("last_background_transfer").apply();
+                    preferences.edit().putLong("device", newDevice).apply();
                     GarminBackgroundJob.ensureScheduled(activity);
                     findSelected(); send(true);
                 }).setNegativeButton("Abbrechen", null).show();
@@ -134,11 +144,13 @@ final class GarminConnection {
         if (sending) { pending = true; return; }
         if (!ready || selected == null) {
             if (manualSend) toast("Uhr nicht verfügbar. Bitte Uhr auswählen.");
+            GarminTransferStatus.record(activity, false, "Uhr nicht verfügbar oder nicht verbunden.");
             manualSend = false; return;
         }
         try {
             if (sdk.getDeviceStatus(selected) != IQDevice.IQDeviceStatus.CONNECTED) {
                 if (manualSend) toast("Uhr nicht verbunden. Garmin Connect öffnen und erneut versuchen.");
+                GarminTransferStatus.record(activity, false, "Uhr nicht verfügbar oder nicht verbunden.");
                 manualSend = false; return;
             }
             sending = true;
@@ -167,6 +179,7 @@ final class GarminConnection {
 
     private void finish(boolean success, String error) {
         handler.removeCallbacks(timeout);
+        GarminTransferStatus.record(activity, success, success ? "Codes an die Uhr gesendet." : error);
         sending = false;
         if (manualSend) toast(success ? "Codes übertragen. Tagescode auf der Uhr öffnen." : error);
         manualSend = false;
