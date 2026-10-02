@@ -78,6 +78,11 @@ final class CodeRepository {
                 .getLong("last_success", 0);
     }
 
+    static long lastNewCodesImport(Context context) {
+        return context.getSharedPreferences("code_import_status", Context.MODE_PRIVATE)
+                .getLong("last_new_codes", 0);
+    }
+
     static String latestAvailableDate(Context context) {
         return snapshot(context).keySet().stream().max(String::compareTo).orElse(null);
     }
@@ -119,6 +124,8 @@ final class CodeRepository {
                                 .getBytes(StandardCharsets.UTF_8));
                     }
                     file.finishWrite(output);
+                    context.getSharedPreferences("code_import_status", Context.MODE_PRIVATE)
+                            .edit().putLong("last_new_codes", System.currentTimeMillis()).apply();
                 } catch (IOException exception) {
                     file.failWrite(output);
                     throw exception;

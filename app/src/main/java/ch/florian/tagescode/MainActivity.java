@@ -390,7 +390,12 @@ public class MainActivity extends Activity {
         String latest = CodeRepository.latestAvailableDate(this);
         String available = latest == null ? getString(R.string.no_codes)
                 : getString(R.string.codes_until_format, shortDateFormat.format(LocalDate.parse(latest)));
-        dataStatusView.setText(imported + "\n" + available);
+        long newCodesAt = CodeRepository.lastNewCodesImport(this);
+        String newCodes = newCodesAt == 0 ? getString(R.string.new_codes_import_unknown)
+                : getString(R.string.new_codes_import_format,
+                    new java.text.SimpleDateFormat("dd.MM.yyyy, HH:mm", Locale.GERMANY)
+                        .format(new java.util.Date(newCodesAt)));
+        dataStatusView.setText(imported + "\n" + newCodes + "\n" + available);
     }
 
     private void showBuildInformation() {

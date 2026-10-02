@@ -35,4 +35,6 @@
     <string name="last_import_format">Zuletzt geprüft: %1$s</string>
     <string name="codes_until_format">Codes verfügbar bis: %1$s</string>
     <string name="no_codes">Keine Tagescodes verfügbar</string>
+    <string name="new_codes_import_format">Zuletzt neue Codes importiert: %1$s</string>
+    <string name="new_codes_import_unknown">Zuletzt neue Codes importiert: noch nicht erfasst</string>
 </resources>
