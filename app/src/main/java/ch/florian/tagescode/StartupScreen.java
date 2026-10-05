@@ -24,7 +24,7 @@ final class StartupScreen {
         TextView version=new TextView(activity);version.setText("Version "+BuildConfig.VERSION_NAME);version.setTextColor(muted);version.setTextSize(11);version.setGravity(Gravity.CENTER);
         FrameLayout.LayoutParams vp=new FrameLayout.LayoutParams(-1,-2,Gravity.BOTTOM);vp.bottomMargin=dp(activity,52);splash.addView(version,vp);
         host.addView(splash,new android.view.ViewGroup.LayoutParams(-1,-1));
-        splash.postDelayed(()->{host.removeView(splash);if(!activity.isFinishing()&&!activity.isDestroyed())ready.run();},700);
+        splash.postDelayed(()->{host.removeView(splash);if(!activity.isFinishing()&&!activity.isDestroyed())ready.run();},2000);
     }
     private static int dp(Activity a,int n){return Math.round(n*a.getResources().getDisplayMetrics().density);}
 }
