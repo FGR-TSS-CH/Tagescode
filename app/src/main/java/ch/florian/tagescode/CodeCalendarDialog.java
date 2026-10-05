@@ -170,9 +170,14 @@ final class CodeCalendarDialog {
         hint.setPadding(0, dp(8), 0, 0);
         calendar.addView(hint);
         Button manual=button("Datum manuell eingeben");
-        manual.setTextColor(0xFF579FCB);
+        manual.setTextColor(dark()?0xFFEAF4FC:0xFF005D9C);
+        android.graphics.drawable.GradientDrawable manualBackground=background(dark()?0xFF253442:0xFFEAF2F8,12);
+        manualBackground.setStroke(dp(1),dark()?0xFF577790:0xFFA9C5D8);
+        manual.setBackground(new android.graphics.drawable.RippleDrawable(android.content.res.ColorStateList.valueOf(0x33579FCB),manualBackground,null));
         manual.setOnClickListener(v -> showManualInput());
-        calendar.addView(manual,new LinearLayout.LayoutParams(-1,dp(48)));
+        LinearLayout.LayoutParams manualParams=new LinearLayout.LayoutParams(-1,dp(48));
+        manualParams.topMargin=dp(14);
+        calendar.addView(manual,manualParams);
     }
 
     private void showManualInput() {
