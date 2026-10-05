@@ -83,13 +83,19 @@ public class MainActivity extends Activity {
     private boolean manuallySelectedDate;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        int mode = getSharedPreferences("appearance", MODE_PRIVATE).getInt("mode", 0);
-        if (mode != 0) {
-            android.content.res.Configuration config = new android.content.res.Configuration(getBaseContext().getResources().getConfiguration());
+    protected void attachBaseContext(android.content.Context base) {
+        int mode = base.getSharedPreferences("appearance", MODE_PRIVATE).getInt("mode", 0);
+        if (mode == android.content.res.Configuration.UI_MODE_NIGHT_YES
+                || mode == android.content.res.Configuration.UI_MODE_NIGHT_NO) {
+            android.content.res.Configuration config = new android.content.res.Configuration(base.getResources().getConfiguration());
             config.uiMode = (config.uiMode & ~android.content.res.Configuration.UI_MODE_NIGHT_MASK) | mode;
-            applyOverrideConfiguration(config);
+            base = base.createConfigurationContext(config);
         }
+        super.attachBaseContext(base);
+    }
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         // Use one consistent inset model; FitScreenLayout reserves the system bars.
         if (android.os.Build.VERSION.SDK_INT >= 30) {
