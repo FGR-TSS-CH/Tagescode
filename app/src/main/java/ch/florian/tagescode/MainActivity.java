@@ -57,8 +57,8 @@ public class MainActivity extends Activity {
 
     /*
      * Das erneute Einlesen der lokalen Codeliste erfolgt in einem
-     * Hintergrundthread. Die Bedienoberfläche bleibt
-     * dadurch jederzeit reaktionsfähig.
+     * Hintergrundthread. Die BedienoberflÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¤che bleibt
+     * dadurch jederzeit reaktionsfÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¤hig.
      */
     private final ExecutorService codeExecutor =
             Executors.newSingleThreadExecutor();
@@ -69,19 +69,27 @@ public class MainActivity extends Activity {
             );
 
     /*
-     * Jede angeforderte Aktualisierung erhält eine Nummer.
+     * Jede angeforderte Aktualisierung erhÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¤lt eine Nummer.
      * Nur das Ergebnis der zuletzt angeforderten
-     * Aktualisierung wird auf der Oberfläche angezeigt.
+     * Aktualisierung wird auf der OberflÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¤che angezeigt.
      */
     private final AtomicInteger reloadRequestNumber =
             new AtomicInteger(0);
 
+    private BottomControls bottomControls;
+    private boolean loadingCodes;
     private boolean firstResume = true;
     private LocalDate displayedDate = LocalDate.now();
     private boolean manuallySelectedDate;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        int mode = getSharedPreferences("appearance", MODE_PRIVATE).getInt("mode", 0);
+        if (mode != 0) {
+            android.content.res.Configuration config = new android.content.res.Configuration(getBaseContext().getResources().getConfiguration());
+            config.uiMode = (config.uiMode & ~android.content.res.Configuration.UI_MODE_NIGHT_MASK) | mode;
+            applyOverrideConfiguration(config);
+        }
         super.onCreate(savedInstanceState);
         // Use one consistent inset model; FitScreenLayout reserves the system bars.
         if (android.os.Build.VERSION.SDK_INT >= 30) {
@@ -99,11 +107,14 @@ public class MainActivity extends Activity {
         bindViews();
 
         configureButtons();
+        bottomControls = new BottomControls(this, buildInfoView, () -> {
+            if (!loadingCodes) { manualCheckPending = true; reloadCodesInBackground(); }
+        }, this::openCloudFilePicker, () -> { if (garmin != null) garmin.sendNow(); });
 
         showBuildInformation();
 
         /*
-         * Beim ersten Öffnen wird die Liste einmal geladen.
+         * Beim ersten ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Å“ffnen wird die Liste einmal geladen.
          * Alle folgenden Abfragen erfolgen direkt aus
          * dem Arbeitsspeicher.
          */
@@ -161,8 +172,8 @@ public class MainActivity extends Activity {
 
     @Override
     public boolean onCreateOptionsMenu(android.view.Menu menu) {
-        menu.add(0, 2, 0, "Jetzt prüfen");
-        menu.add(0, 1, 1, "OneDrive-Datei auswählen");
+        menu.add(0, 2, 0, "Jetzt prÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¼fen");
+        menu.add(0, 1, 1, "OneDrive-Datei auswÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¤hlen");
         menu.add(0, 3, 2, "Garmin-Uhr");
         return true;
     }
@@ -191,20 +202,20 @@ public class MainActivity extends Activity {
     }
 
     private void openCloudFilePicker() {
-        Toast.makeText(this, "Bitte Tagescodes.txt aus OneDrive auswählen.",
+        Toast.makeText(this, "Bitte Tagescodes.txt aus OneDrive auswÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¤hlen.",
                 Toast.LENGTH_LONG).show();
         try {
             startActivityForResult(CloudCodeFileAccess.createFilePickerIntent(),
                     CloudCodeFileAccess.REQUEST_CLOUD_CODE_FILE);
         } catch (android.content.ActivityNotFoundException exception) {
-            Toast.makeText(this, "Kein Dateiauswahldialog verfügbar.", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Kein Dateiauswahldialog verfÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¼gbar.", Toast.LENGTH_LONG).show();
         }
     }
 
     private void configureButtons() {
         /*
          * Sowohl das Tippen auf die grosse Zahl als auch
-         * der blaue Button öffnen die Datumsauswahl.
+         * der blaue Button ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¶ffnen die Datumsauswahl.
          */
         codeView.setOnClickListener(
                 view -> openDatePicker()
@@ -245,6 +256,7 @@ public class MainActivity extends Activity {
     protected void onStart() {
         super.onStart();
         garmin = new GarminConnection(this);
+        garmin.setStateListener(() -> { if (bottomControls != null && garmin != null) bottomControls.watchBusy(garmin.busy()); });
     }
 
     @Override
@@ -260,7 +272,7 @@ public class MainActivity extends Activity {
         /*
          * onResume wird direkt nach onCreate ebenfalls
          * aufgerufen. Die Anzeige muss dabei nicht ein
-         * zweites Mal vollständig aufgebaut werden.
+         * zweites Mal vollstÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¤ndig aufgebaut werden.
          */
         if (firstResume) {
             firstResume = false;
@@ -270,7 +282,7 @@ public class MainActivity extends Activity {
         }
 
         /*
-         * Zuerst wird ohne Verzögerung der vorhandene
+         * Zuerst wird ohne VerzÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¶gerung der vorhandene
          * Cache angezeigt.
          */
         showToday();
@@ -280,8 +292,8 @@ public class MainActivity extends Activity {
         );
 
         /*
-         * Danach wird im Hintergrund geprüft, ob sich
-         * die lokalen Codeliste geändert hat.
+         * Danach wird im Hintergrund geprÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¼ft, ob sich
+         * die lokalen Codeliste geÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¤ndert hat.
          */
         reloadCodesInBackground();
     }
@@ -307,7 +319,7 @@ public class MainActivity extends Activity {
     ) {
         /*
          * Diese Abfrage erfolgt direkt aus der Map im
-         * Arbeitsspeicher und benötigt kein erneutes
+         * Arbeitsspeicher und benÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¶tigt kein erneutes
          * Lesen der lokalen Codeliste.
          */
         displayedDate = date;
@@ -443,6 +455,7 @@ public class MainActivity extends Activity {
         availabilityView.setBackgroundColor(missingToday ? 0xFFFFCC00 : android.graphics.Color.TRANSPARENT);
         availabilityView.setTextColor(missingToday ? android.graphics.Color.BLACK : getColor(R.color.text_primary));
         dataStatusView.setText(newCodes + "\n" + imported);
+        if (bottomControls != null) bottomControls.update(loadingCodes);
     }
 
     private void showBuildInformation() {
@@ -473,6 +486,9 @@ public class MainActivity extends Activity {
     }
 
     private void reloadCodesInBackground() {
+        if (loadingCodes) return;
+        loadingCodes = true;
+        if (bottomControls != null) bottomControls.update(true);
         int currentRequest =
                 reloadRequestNumber
                         .incrementAndGet();
@@ -486,7 +502,9 @@ public class MainActivity extends Activity {
                     getApplicationContext()
             );
 
-            int imported = CodeRepository.importCloudCodes(getApplicationContext());
+            int imported = CodeRepository.importCloudCodes(getApplicationContext(), () -> mainHandler.post(() -> {
+                if (!isDestroyed() && bottomControls != null) bottomControls.importing();
+            }));
             mainHandler.post(() -> {
                 if (
                         isFinishing()
@@ -508,14 +526,15 @@ public class MainActivity extends Activity {
                     return;
                 }
 
+                loadingCodes = false;
                 boolean wasManualCheck = manualCheckPending;
                 manualCheckPending = false;
                 if (wasManualCheck && imported == 0) {
                     Toast.makeText(this, R.string.check_up_to_date, Toast.LENGTH_SHORT).show();
                 }
                 if (imported < 0) {
-                    Toast.makeText(this, "OneDrive-Datei nicht lesbar. Gespeicherte Codes bleiben verfügbar. "
-                            + "Zum erneuten Auswählen unten auf die Version tippen.", Toast.LENGTH_LONG).show();
+                    Toast.makeText(this, "OneDrive-Datei nicht lesbar. Gespeicherte Codes bleiben verfÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¼gbar. "
+                            + "Zum erneuten AuswÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¤hlen unten auf die Version tippen.", Toast.LENGTH_LONG).show();
                 } else if (imported > 0) {
                     Toast.makeText(this, imported + " neue Tagescodes gespeichert.", Toast.LENGTH_SHORT).show();
                 }
@@ -550,7 +569,7 @@ public class MainActivity extends Activity {
                             Toast.LENGTH_LONG).show();
                 }
             } else {
-                Toast.makeText(this, "Später auswählen: unten auf die Version tippen.",
+                Toast.makeText(this, "SpÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¤ter auswÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¤hlen: unten auf die Version tippen.",
                         Toast.LENGTH_LONG).show();
             }
             return;
@@ -562,7 +581,7 @@ public class MainActivity extends Activity {
     protected void onDestroy() {
         /*
          * Ausstehende Hintergrundaufgaben werden beim
-         * vollständigen Schliessen der Activity beendet.
+         * vollstÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¤ndigen Schliessen der Activity beendet.
          */
         codeExecutor.shutdownNow();
         if (garmin != null) garmin.close();

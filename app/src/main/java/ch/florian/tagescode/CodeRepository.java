@@ -63,23 +63,29 @@ final class CodeRepository {
     }
 
     /** Returns -1 on access/read/write failure, otherwise the number of new dates. */
-    static int importCloudCodes(Context context) {
+    static int codeCount(Context context) { return snapshot(context).size(); }
+    static int importCloudCodes(Context context) { return importCloudCodes(context, () -> {}); }
+    static int importCloudCodes(Context context, Runnable importing) {
         synchronized (LOCK) {
+            String failure = "Datei konnte nicht gelesen werden";
+            context.getSharedPreferences("code_import_status", 0).edit().putLong("last_attempt", System.currentTimeMillis()).apply();
             try {
                 Map<String, String> incoming;
                 try (InputStream input = CloudCodeFileAccess.openCodeFile(context)) {
                     if (input == null) throw new IOException("No source file selected");
                     incoming = CodeFileParser.read(input);
                 }
+                failure = "Import fehlgeschlagen";
                 if (incoming.isEmpty()) throw new IOException("No valid codes");
+                if (incoming.keySet().stream().anyMatch(key -> !snapshot(context).containsKey(key))) importing.run();
                 int added = mergeAndSave(context, incoming);
                 context.getSharedPreferences("code_import_status", Context.MODE_PRIVATE)
                         .edit().putLong("last_success", System.currentTimeMillis())
-                        .putBoolean("last_failed", false).apply();
+                        .putBoolean("last_failed", false).putString("last_error", "").putInt("last_added", added).apply();
                 return added;
             } catch (IOException | SecurityException exception) {
                 context.getSharedPreferences("code_import_status", Context.MODE_PRIVATE)
-                        .edit().putBoolean("last_failed", true).apply();
+                        .edit().putBoolean("last_failed", true).putString("last_error", failure).apply();
                 return -1;
             }
         }

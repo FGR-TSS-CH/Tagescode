@@ -49,7 +49,7 @@ public class TagescodeWidget extends AppWidgetProvider {
         }
 
         /*
-         * Sicherheitshalber den nächsten Tageswechsel
+         * Sicherheitshalber den nÃ¤chsten Tageswechsel
          * erneut einplanen.
          */
         DailyWidgetUpdateReceiver.scheduleNextUpdate(
@@ -88,8 +88,8 @@ public class TagescodeWidget extends AppWidgetProvider {
             updateAllWidgets(context);
 
             /*
-             * Nach Neustart, Zeitänderung oder
-             * Zeitzonenwechsel den nächsten Alarm
+             * Nach Neustart, ZeitÃ¤nderung oder
+             * Zeitzonenwechsel den nÃ¤chsten Alarm
              * erneut korrekt setzen.
              */
             DailyWidgetUpdateReceiver.scheduleNextUpdate(
@@ -123,6 +123,7 @@ public class TagescodeWidget extends AppWidgetProvider {
             );
         }
         CompactTagescodeWidget.updateCompactWidgets(context);
+        if (appWidgetIds.length > 0) context.getSharedPreferences("code_import_status",0).edit().putLong("widget_updated",System.currentTimeMillis()).apply();
     }
 
     private static void updateAppWidget(
@@ -170,7 +171,7 @@ public class TagescodeWidget extends AppWidgetProvider {
         );
 
         /*
-         * Klick auf das Widget öffnet die App.
+         * Klick auf das Widget Ã¶ffnet die App.
          */
         Intent openAppIntent =
                 new Intent(

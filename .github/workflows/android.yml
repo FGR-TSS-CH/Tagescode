@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - release/ui-1.6.1
   workflow_dispatch:
 
 permissions:
