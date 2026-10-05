@@ -24,7 +24,7 @@ final class CodeCalendarDialog {
     private final Consumer<LocalDate> onSelected;
     private final LocalDate preferred;
     private final LinearLayout calendar;
-    private final AlertDialog dialog;
+    private final android.app.Dialog dialog;
     private int monthIndex;
 
     static void show(Context context, AvailableCodeDates dates, LocalDate preferred,
@@ -35,7 +35,7 @@ final class CodeCalendarDialog {
                     .setPositiveButton("OK", null).show();
             return;
         }
-        new CodeCalendarDialog(context, dates, preferred, onSelected).dialog.show();
+        new CodeCalendarDialog(context, dates, preferred, onSelected).open();
     }
 
     private CodeCalendarDialog(Context context, AvailableCodeDates dates, LocalDate preferred,
@@ -51,11 +51,15 @@ final class CodeCalendarDialog {
         calendar.setPadding(padding, padding, padding, padding);
         ScrollView scroll = new ScrollView(context);
         scroll.addView(calendar);
-        dialog = new AlertDialog.Builder(context).setTitle("Datum auswählen")
-                .setView(scroll).setNegativeButton("Abbrechen", null).create();
+        dialog = new android.app.Dialog(context);dialog.requestWindowFeature(1);
+        LinearLayout shell=new LinearLayout(context);shell.setOrientation(1);shell.setPadding(dp(16),dp(16),dp(16),dp(16));shell.setBackground(background(dark()?0xFF10181E:0xFFFFFFFF,20));
+        LinearLayout header=new LinearLayout(context);header.setGravity(16);TextView heading=new TextView(context);heading.setText("Datum auswählen");heading.setTextSize(20);heading.setTypeface(null,1);header.addView(heading,new LinearLayout.LayoutParams(0,-2,1));Button close=button("Schliessen");close.setTextSize(11);close.setOnClickListener(v->dialog.dismiss());header.addView(close,new LinearLayout.LayoutParams(dp(76),dp(44)));shell.addView(header);shell.addView(scroll);dialog.setContentView(shell);
         render();
     }
 
+    private boolean dark(){return (context.getResources().getConfiguration().uiMode & 48)==32;}
+    private android.graphics.drawable.GradientDrawable background(int color,int radius){android.graphics.drawable.GradientDrawable d=new android.graphics.drawable.GradientDrawable();d.setColor(color);d.setCornerRadius(dp(radius));return d;}
+    private void open(){dialog.show();dialog.getWindow().setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(0));dialog.getWindow().setLayout(Math.min(context.getResources().getDisplayMetrics().widthPixels-dp(32),dp(460)),-2);}
     private int dp(int value) {
         return Math.round(value * context.getResources().getDisplayMetrics().density);
     }
@@ -63,7 +67,7 @@ final class CodeCalendarDialog {
     private Button button(String text) {
         Button button = new Button(context);
         button.setText(text);
-        button.setTextSize(14);
+        button.setTextSize(14);button.setAllCaps(false);button.setStateListAnimator(null);button.setBackgroundTintList(null);button.setBackground(background(0,10));button.setTextColor(dark()?0xFFEDF2F6:0xFF161A1E);
         button.setMinWidth(0);
         button.setMinimumWidth(0);
         button.setPadding(0, 0, 0, 0);
@@ -118,14 +122,15 @@ final class CodeCalendarDialog {
             day.setAlpha(available ? 1f : 0.3f);
             day.setContentDescription(DAY.format(date)
                     + (available ? ", Tagescode verfügbar" : ", kein Tagescode"));
-            if (date.equals(preferred)) day.setTypeface(null, android.graphics.Typeface.BOLD);
+            if(available)day.setBackground(background(dark()?0xFF202D37:0xFFEAF0F4,10));
+            if(date.equals(preferred)&&available){day.setTypeface(null,android.graphics.Typeface.BOLD);day.setBackground(background(0xFF005D9C,10));day.setTextColor(0xFFFFFFFF);}
             if (available) {
                 day.setOnClickListener(v -> {
                     onSelected.accept(date);
                     dialog.dismiss();
                 });
             }
-            row.addView(day, new LinearLayout.LayoutParams(0, dp(48), 1));
+            LinearLayout.LayoutParams cellParams=new LinearLayout.LayoutParams(0,dp(44),1);cellParams.setMargins(dp(2),dp(2),dp(2),dp(2));row.addView(day,cellParams);
         }
         TextView hint = new TextView(context);
         hint.setText("Nur Tage mit Tagescode sind auswählbar.");

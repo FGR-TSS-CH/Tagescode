@@ -96,6 +96,7 @@ public class MainActivity extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        setTheme(R.style.Theme_Tagescode);
         super.onCreate(savedInstanceState);
         // Use one consistent inset model; FitScreenLayout reserves the system bars.
         if (android.os.Build.VERSION.SDK_INT >= 30) {
@@ -126,7 +127,7 @@ public class MainActivity extends Activity {
          */
         showToday();
 
-        requestCloudFileAccessIfNeeded();
+        StartupScreen.show(this, this::requestCloudFileAccessIfNeeded);
     }
 
     private void bindViews() {

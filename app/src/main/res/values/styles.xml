@@ -7,4 +7,7 @@
         <item name="android:windowMinWidthMajor">90%</item>
         <item name="android:windowMinWidthMinor">90%</item>
     </style>
+    <style name="Theme.Tagescode.Launch" parent="Theme.Tagescode">
+        <item name="android:windowBackground">@drawable/splash_background</item>
+    </style>
 </resources>
