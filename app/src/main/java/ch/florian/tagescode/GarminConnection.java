@@ -42,6 +42,25 @@ final class GarminConnection {
         if (selected != null) send(false);
     }
 
+    void sendNow() {
+        if (closed) return;
+        manualSend = true;
+
+        if (!preferences.contains("device")) {
+            if (ready) chooseDevice();
+            else start(true);
+            return;
+        }
+
+        if (!ready) {
+            start(false);
+            return;
+        }
+
+        if (selected == null) findSelected();
+        send(true);
+    }
+
     void showMenu() {
         new AlertDialog.Builder(activity).setTitle("Garmin Tagescode")
             .setItems(new String[]{"Codes jetzt übertragen", "Uhr auswählen", "Verbindung deaktivieren", "Übertragungsstatus"},
