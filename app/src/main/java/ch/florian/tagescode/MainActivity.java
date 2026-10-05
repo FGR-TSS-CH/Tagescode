@@ -170,7 +170,7 @@ public class MainActivity extends Activity {
 
         watchButton.setOnClickListener(view -> {
             if (garmin != null) {
-                garmin.showMenu();
+                garmin.sendNow();
             } else {
                 Toast.makeText(
                         this,
