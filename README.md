@@ -18,6 +18,8 @@ Die App zeigt den heutigen sechsstelligen Tagescode an und stellt ihn zusätzlic
 * Unterschiedliches Videojet-Logo für Hell- und Dunkelmodus.
 * Eigenes Tagescode-App-Icon.
 * Bereits gespeicherte Codes funktionieren offline; neue OneDrive-Codes werden bei verfügbarem Dateizugriff importiert.
+* Unten stehen vier Direktbuttons für **Uhr**, **Prüfen**, **TXT** und **Info**.
+* Eine Statusanzeige zeigt sofort, ob alles i.O. ist. Grün bedeutet: Datei erfolgreich geprüft, neue Codes falls nötig importiert und heutiger Code vorhanden.
 
 ## Weitere Tagescodes
 
@@ -46,7 +48,7 @@ Beim Öffnen der App und beim täglichen Widget-Update wird die Datei im Hinterg
 
 Unterstützte Formate sind `MM/DD/YYYY`, `DD.MM.YYYY`, `YYYY-MM-DD` und `DD-MM-YYYY`, jeweils gefolgt von sechs Ziffern. Schrägstriche bedeuten immer Monat/Tag/Jahr, passend zur Power-Automate-Datei. Beispiel: `10/02/2026 000416` ist der 2. Oktober.
 
-Zum Wechseln der Datei oder erneuten Erteilen der Berechtigung unten auf die Versionsanzeige tippen und **OneDrive-Datei auswählen** wählen. Die App importiert ausschliesslich die gewählte `Tagescodes.txt`. Der frühere PwD-Ordner wird nicht mehr gelesen. Bereits gespeicherte Codes bleiben erhalten. Nach einer Neuinstallation muss die zentrale Datei einmal ausgewählt und erfolgreich importiert werden.
+Zum Wechseln der Datei oder erneuten Erteilen der Berechtigung unten auf **TXT** tippen. Die App importiert ausschliesslich die gewählte `Tagescodes.txt`. Der frühere PwD-Ordner wird nicht mehr gelesen. Bereits gespeicherte Codes bleiben erhalten. Nach einer Neuinstallation muss die zentrale Datei einmal ausgewählt und erfolgreich importiert werden.
 
 Bei fehlendem Internet, abgemeldetem OneDrive oder entzogenem Zugriff bleiben lokal gespeicherte Codes erhalten. In der App erscheint bei fehlgeschlagenem Cloud-Import ein Hinweis. Android und der Dateianbieter bestimmen, wann aktuelle Cloud-Inhalte verfügbar sind; die App kann keine sofortige OneDrive-Synchronisation erzwingen.
 
@@ -60,13 +62,26 @@ Das Widget zeigt beim Tageswechsel sofort den lokal bekannten Code. Der Alarm ku
 
 Die Importtests prüfen Datumsformate, führende Nullen, Duplikate, ungültige Einträge und Lesefehler. Auf einem Android-Gerät zusätzlich Dateiauswahl, dauerhafte Freigabe nach Neustart, Offline-Anzeige und täglichen Widget-Import mit dem verwendeten OneDrive-Anbieter prüfen.
 
+## Bedienleiste und Status
+
+Die untere Bedienleiste enthält:
+
+* **Uhr** – Tagescodes direkt an die ausgewählte Garmin-Uhr senden.
+* **Prüfen** – die gewählte `Tagescodes.txt` sofort prüfen und nur neue Datumswerte importieren.
+* **TXT** – eine andere `Tagescodes.txt` auswählen.
+* **Info** – Version, Build, gewählte Datei, letzte Prüfung, letzte erfolgreiche Prüfung, letzten Import neuer Codes, Anzahl neuer Codes, verfügbares Enddatum und Garmin-Übertragungsstatus anzeigen.
+
+Die Statusanzeige verwendet drei Zustände:
+
+* **Grün** – alles i.O.; Datei erfolgreich geprüft und heutiger Tagescode vorhanden.
+* **Gelb** – Prüfung läuft, Datei fehlt oder es wurde noch keine erfolgreiche Prüfung durchgeführt.
+* **Rot** – Prüfung fehlgeschlagen oder der heutige Tagescode fehlt.
+
 ## Version
 
-Die App zeigt im unteren Bereich die aktuelle Versionsnummer sowie Monat und Jahr des Builds an.
+Aktuelle App-Version: **1.6.0**
 
-Beispiel:
-
-`Version 1.3.86 · August 2026`
+Die App zeigt weiterhin Versionsnummer sowie Monat und Jahr des Builds an.
 
 ## Kalender und Sperrbildschirm
 
