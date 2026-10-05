@@ -38,7 +38,7 @@ final class BottomControls {
         LinearLayout state=new LinearLayout(a);state.setGravity(17);state.setPadding(0,dp(9),0,dp(9));
         dot=new View(a);state.addView(dot,new LinearLayout.LayoutParams(dp(7),dp(7)));
         progress=new ProgressBar(a);state.addView(progress,new LinearLayout.LayoutParams(dp(18),dp(18)));
-        status=new TextView(a);status.setTextSize(12);status.setPadding(dp(8),0,0,0);state.addView(status,new LinearLayout.LayoutParams(-2,-2));status.setGravity(17);footer.addView(state);footer.addView(credit);
+        status=new TextView(a);status.setTextSize(12);status.setPadding(dp(8),0,0,0);state.addView(status,new LinearLayout.LayoutParams(-2,-2));status.setGravity(17);footer.addView(state);LinearLayout.LayoutParams creditParams=new LinearLayout.LayoutParams(-2,-2);creditParams.topMargin=dp(6);footer.addView(credit,creditParams);
     }
     private boolean dark(){return (activity.getResources().getConfiguration().uiMode & 48)==32;}
     private android.graphics.drawable.GradientDrawable rounded(int color,int radius,int stroke){android.graphics.drawable.GradientDrawable d=new android.graphics.drawable.GradientDrawable();d.setColor(color);d.setCornerRadius(dp(radius));if(stroke!=0)d.setStroke(dp(1),stroke);return d;}
