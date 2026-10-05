@@ -81,7 +81,7 @@ final class GarminConnection {
             sdk.initialize(activity, false, new ConnectIQ.ConnectIQListener() {
                 public void onSdkReady() { ui(() -> {
                     if (currentSession != session) return;
-                    ready = true; starting = false;
+                    ready = true; starting = false; stateListener.run();
                     if (chooseWhenReady) { chooseWhenReady = false; chooseDevice(); }
                     else { findSelected(); send(manualSend); }
                 }); }

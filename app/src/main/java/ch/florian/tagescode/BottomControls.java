@@ -33,10 +33,13 @@ final class BottomControls {
         LinearLayout state=new LinearLayout(a);state.setGravity(17);state.setPadding(0,dp(9),0,dp(9));
         dot=new View(a);state.addView(dot,new LinearLayout.LayoutParams(dp(7),dp(7)));
         progress=new ProgressBar(a);state.addView(progress,new LinearLayout.LayoutParams(dp(18),dp(18)));
-        status=new TextView(a);status.setTextSize(12);status.setPadding(dp(8),0,0,0);state.addView(status);footer.addView(state);footer.addView(credit);
+        status=new TextView(a);status.setTextSize(12);status.setPadding(dp(8),0,0,0);state.addView(status,new LinearLayout.LayoutParams(0,-2,1));status.setGravity(17);footer.addView(state);footer.addView(credit);
     }
     private int dp(int n){return Math.round(n*activity.getResources().getDisplayMetrics().density);}
-    private Button button(String text){Button b=new Button(activity);b.setText(text);b.setAllCaps(false);b.setTextSize(13);b.setMinWidth(0);b.setPadding(0,0,0,0);return b;}
+    private Button button(String text){Button b=new Button(activity);b.setText(text);b.setAllCaps(false);b.setTextSize(13);b.setMinWidth(0);b.setPadding(0,dp(4),0,dp(4));
+        int icon=text.equals("Uhr")?android.R.drawable.ic_menu_send:text.equals("Prüfen")?android.R.drawable.ic_popup_sync:text.equals("TXT")?android.R.drawable.ic_menu_agenda:text.equals("Info")?android.R.drawable.ic_menu_info_details:0;
+        if(icon!=0){android.graphics.drawable.Drawable d=activity.getDrawable(icon);d.setBounds(0,0,dp(20),dp(20));d.setTint(activity.getColor(R.color.text_secondary));b.setCompoundDrawables(null,d,null,null);b.setCompoundDrawablePadding(dp(2));}
+        return b;}
     void update(boolean busy){
         for(int id:new int[]{R.id.availabilityView,R.id.dataStatusView,R.id.checkStatusView,R.id.buildInfoView})activity.findViewById(id).setVisibility(View.GONE);
         check.setEnabled(!busy);progress.setVisibility(busy?View.VISIBLE:View.GONE);
