@@ -82,7 +82,7 @@ final class CodeCalendarDialog {
         scroll.addView(calendar);
         dialog = new android.app.Dialog(context);dialog.requestWindowFeature(1);
         LinearLayout shell=new LinearLayout(context);shell.setOrientation(1);shell.setPadding(dp(16),dp(16),dp(16),dp(16));shell.setBackground(background(dark()?0xFF10181E:0xFFFFFFFF,20));
-        LinearLayout header=new LinearLayout(context);header.setGravity(16);TextView heading=new TextView(context);heading.setText("Datum auswählen");heading.setTextSize(20);heading.setTypeface(null,1);header.addView(heading,new LinearLayout.LayoutParams(0,-2,1));Button close=button("Schliessen");close.setTextSize(11);close.setOnClickListener(v->dialog.dismiss());header.addView(close,new LinearLayout.LayoutParams(dp(76),dp(44)));shell.addView(header);shell.addView(scroll);dialog.setContentView(shell);
+        LinearLayout header=new LinearLayout(context);header.setGravity(16);TextView heading=new TextView(context);heading.setText("Datum auswählen");heading.setTextSize(20);heading.setTypeface(null,1);header.addView(heading,new LinearLayout.LayoutParams(0,-2,1));Button close=button("×");close.setTextSize(25);close.setContentDescription("Schliessen");close.setBackground(new android.graphics.drawable.RippleDrawable(android.content.res.ColorStateList.valueOf(0x33579FCB),background(dark()?0xFF202D37:0xFFEAF0F4,24),null));close.setOnClickListener(v->dialog.dismiss());header.addView(close,new LinearLayout.LayoutParams(dp(44),dp(44)));shell.addView(header);shell.addView(scroll);dialog.setContentView(shell);
         render();
     }
 
