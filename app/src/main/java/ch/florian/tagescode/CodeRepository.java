@@ -66,6 +66,7 @@ final class CodeRepository {
     static int codeCount(Context context) { return snapshot(context).size(); }
     static int importCloudCodes(Context context) { return importCloudCodes(context, () -> {}); }
     static int importCloudCodes(Context context, Runnable importing) {
+        CloudCodeFileAccess.cacheDisplayName(context);
         synchronized (LOCK) {
             String failure = "Datei konnte nicht gelesen werden";
             context.getSharedPreferences("code_import_status", 0).edit().putLong("last_attempt", System.currentTimeMillis()).apply();
