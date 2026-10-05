@@ -1,6 +1,7 @@
 package ch.florian.tagescode;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -10,8 +11,10 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Date;
 import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -22,26 +25,26 @@ public class MainActivity extends Activity {
     private TextView codeView;
     private TextView dateView;
     private TextView codeLabelView;
-    private TextView dataStatusView;
-    private TextView availabilityView;
-    private TextView checkStatusView;
-    private boolean manualCheckPending;
-    private GarminConnection garmin;
 
     private TextView yesterdayCodeView;
     private TextView code2000View;
     private TextView code2001View;
     private TextView code2006View;
 
+    private TextView statusDotView;
+    private TextView statusTitleView;
+    private TextView statusDetailView;
     private TextView buildInfoView;
 
-    /*
-     * Der blaue Datumsbutton ist im aktuellen Layout
-     * ein LinearLayout. Deshalb wird er als View behandelt.
-     */
     private View otherDateButton;
-
     private Button todayButton;
+    private Button watchButton;
+    private Button checkButton;
+    private Button fileButton;
+    private Button infoButton;
+
+    private boolean manualCheckPending;
+    private GarminConnection garmin;
 
     private final DateTimeFormatter longDateFormat =
             DateTimeFormatter.ofPattern(
@@ -55,11 +58,12 @@ public class MainActivity extends Activity {
                     Locale.GERMANY
             );
 
-    /*
-     * Das erneute Einlesen der lokalen Codeliste erfolgt in einem
-     * Hintergrundthread. Die Bedienoberfläche bleibt
-     * dadurch jederzeit reaktionsfähig.
-     */
+    private final SimpleDateFormat timestampFormat =
+            new SimpleDateFormat(
+                    "dd.MM.yyyy, HH:mm",
+                    Locale.GERMANY
+            );
+
     private final ExecutorService codeExecutor =
             Executors.newSingleThreadExecutor();
 
@@ -68,11 +72,6 @@ public class MainActivity extends Activity {
                     Looper.getMainLooper()
             );
 
-    /*
-     * Jede angeforderte Aktualisierung erhält eine Nummer.
-     * Nur das Ergebnis der zuletzt angeforderten
-     * Aktualisierung wird auf der Oberfläche angezeigt.
-     */
     private final AtomicInteger reloadRequestNumber =
             new AtomicInteger(0);
 
@@ -83,162 +82,151 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        // Use one consistent inset model; FitScreenLayout reserves the system bars.
+
         if (android.os.Build.VERSION.SDK_INT >= 30) {
             getWindow().setDecorFitsSystemWindows(false);
         } else {
             getWindow().getDecorView().setSystemUiVisibility(
-                    View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                            | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);
+                    View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                            | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                            | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+            );
         }
 
-        setContentView(
-                R.layout.activity_main
-        );
+        setContentView(R.layout.activity_main);
 
         bindViews();
-
         configureButtons();
-
         showBuildInformation();
-
-        /*
-         * Beim ersten Öffnen wird die Liste einmal geladen.
-         * Alle folgenden Abfragen erfolgen direkt aus
-         * dem Arbeitsspeicher.
-         */
         showToday();
+        updateStatusPanel();
 
         requestCloudFileAccessIfNeeded();
     }
 
     private void bindViews() {
         codeLabelView = findViewById(R.id.codeLabelView);
-        dataStatusView = findViewById(R.id.dataStatusView);
-        availabilityView = findViewById(R.id.availabilityView);
-        checkStatusView = findViewById(R.id.checkStatusView);
-        codeView =
-                findViewById(R.id.codeView);
+        codeView = findViewById(R.id.codeView);
+        dateView = findViewById(R.id.dateView);
 
-        dateView =
-                findViewById(R.id.dateView);
+        yesterdayCodeView = findViewById(R.id.yesterdayCodeView);
+        code2000View = findViewById(R.id.code2000View);
+        code2001View = findViewById(R.id.code2001View);
+        code2006View = findViewById(R.id.code2006View);
 
-        yesterdayCodeView =
-                findViewById(
-                        R.id.yesterdayCodeView
-                );
+        statusDotView = findViewById(R.id.statusDotView);
+        statusTitleView = findViewById(R.id.statusTitleView);
+        statusDetailView = findViewById(R.id.statusDetailView);
+        buildInfoView = findViewById(R.id.buildInfoView);
 
-        code2000View =
-                findViewById(
-                        R.id.code2000View
-                );
+        otherDateButton = findViewById(R.id.otherDateButton);
+        todayButton = findViewById(R.id.todayButton);
 
-        code2001View =
-                findViewById(
-                        R.id.code2001View
-                );
-
-        code2006View =
-                findViewById(
-                        R.id.code2006View
-                );
-
-        buildInfoView =
-                findViewById(
-                        R.id.buildInfoView
-                );
-
-        otherDateButton =
-                findViewById(
-                        R.id.otherDateButton
-                );
-
-        todayButton =
-                findViewById(
-                        R.id.todayButton
-                );
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(android.view.Menu menu) {
-        menu.add(0, 2, 0, "Jetzt prüfen");
-        menu.add(0, 1, 1, "OneDrive-Datei auswählen");
-        menu.add(0, 3, 2, "Garmin-Uhr");
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(android.view.MenuItem item) {
-        if (item.getItemId() == 3) { garmin.showMenu(); return true; }
-        if (item.getItemId() == 2) {
-            if (!manualCheckPending) {
-                manualCheckPending = true;
-                checkStatusView.setText(R.string.check_running);
-                checkStatusView.setVisibility(View.VISIBLE);
-                reloadCodesInBackground();
-            }
-            return true;
-        }
-        if (item.getItemId() == 1) {
-            openCloudFilePicker();
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
-
-    private void requestCloudFileAccessIfNeeded() {
-        if (!CloudCodeFileAccess.hasSavedFile(this)) openCloudFilePicker();
-    }
-
-    private void openCloudFilePicker() {
-        Toast.makeText(this, "Bitte Tagescodes.txt aus OneDrive auswählen.",
-                Toast.LENGTH_LONG).show();
-        try {
-            startActivityForResult(CloudCodeFileAccess.createFilePickerIntent(),
-                    CloudCodeFileAccess.REQUEST_CLOUD_CODE_FILE);
-        } catch (android.content.ActivityNotFoundException exception) {
-            Toast.makeText(this, "Kein Dateiauswahldialog verfügbar.", Toast.LENGTH_LONG).show();
-        }
+        watchButton = findViewById(R.id.watchButton);
+        checkButton = findViewById(R.id.checkButton);
+        fileButton = findViewById(R.id.fileButton);
+        infoButton = findViewById(R.id.infoButton);
     }
 
     private void configureButtons() {
-        /*
-         * Sowohl das Tippen auf die grosse Zahl als auch
-         * der blaue Button öffnen die Datumsauswahl.
-         */
-        codeView.setOnClickListener(
-                view -> openDatePicker()
-        );
+        codeView.setOnClickListener(view -> openDatePicker());
 
         codeView.setOnLongClickListener(view -> {
             String code = codeView.getText().toString();
+
             if (!code.matches("[0-9]{6}")) {
-                Toast.makeText(this, R.string.no_code_to_copy, Toast.LENGTH_SHORT).show();
+                Toast.makeText(
+                        this,
+                        R.string.no_code_to_copy,
+                        Toast.LENGTH_SHORT
+                ).show();
                 return true;
             }
+
             android.content.ClipboardManager clipboard =
-                    (android.content.ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+                    (android.content.ClipboardManager)
+                            getSystemService(CLIPBOARD_SERVICE);
+
             if (clipboard != null) {
-                clipboard.setPrimaryClip(android.content.ClipData.newPlainText("Tagescode", code));
-                Toast.makeText(this, R.string.code_copied, Toast.LENGTH_SHORT).show();
+                clipboard.setPrimaryClip(
+                        android.content.ClipData.newPlainText(
+                                "Tagescode",
+                                code
+                        )
+                );
+
+                Toast.makeText(
+                        this,
+                        R.string.code_copied,
+                        Toast.LENGTH_SHORT
+                ).show();
             }
+
             return true;
         });
 
-        otherDateButton.setOnClickListener(
-                view -> openDatePicker()
-        );
+        otherDateButton.setOnClickListener(view -> openDatePicker());
+        todayButton.setOnClickListener(view -> showToday());
 
-        buildInfoView.setOnClickListener(view -> {
-            android.widget.PopupMenu menu = new android.widget.PopupMenu(this, buildInfoView);
-            onCreateOptionsMenu(menu.getMenu());
-            menu.setOnMenuItemClickListener(this::onOptionsItemSelected);
-            menu.show();
+        watchButton.setOnClickListener(view -> {
+            if (garmin != null) {
+                garmin.showMenu();
+            } else {
+                Toast.makeText(
+                        this,
+                        R.string.garmin_not_ready,
+                        Toast.LENGTH_SHORT
+                ).show();
+            }
         });
 
-        todayButton.setOnClickListener(
-                view -> showToday()
-        );
+        checkButton.setOnClickListener(view -> startManualCheck());
+        fileButton.setOnClickListener(view -> openCloudFilePicker());
+        infoButton.setOnClickListener(view -> showInfoDialog());
+
+        buildInfoView.setOnClickListener(view -> showInfoDialog());
+    }
+
+    private void startManualCheck() {
+        if (manualCheckPending) {
+            return;
+        }
+
+        if (!CloudCodeFileAccess.hasSavedFile(this)) {
+            openCloudFilePicker();
+            return;
+        }
+
+        manualCheckPending = true;
+        updateStatusPanel();
+        reloadCodesInBackground();
+    }
+
+    private void requestCloudFileAccessIfNeeded() {
+        if (!CloudCodeFileAccess.hasSavedFile(this)) {
+            openCloudFilePicker();
+        }
+    }
+
+    private void openCloudFilePicker() {
+        Toast.makeText(
+                this,
+                R.string.select_cloud_file_hint,
+                Toast.LENGTH_LONG
+        ).show();
+
+        try {
+            startActivityForResult(
+                    CloudCodeFileAccess.createFilePickerIntent(),
+                    CloudCodeFileAccess.REQUEST_CLOUD_CODE_FILE
+            );
+        } catch (android.content.ActivityNotFoundException exception) {
+            Toast.makeText(
+                    this,
+                    R.string.no_file_picker,
+                    Toast.LENGTH_LONG
+            ).show();
+        }
     }
 
     @Override
@@ -249,7 +237,11 @@ public class MainActivity extends Activity {
 
     @Override
     protected void onStop() {
-        if (garmin != null) { garmin.close(); garmin = null; }
+        if (garmin != null) {
+            garmin.close();
+            garmin = null;
+        }
+
         super.onStop();
     }
 
@@ -257,46 +249,32 @@ public class MainActivity extends Activity {
     protected void onResume() {
         super.onResume();
 
-        /*
-         * onResume wird direkt nach onCreate ebenfalls
-         * aufgerufen. Die Anzeige muss dabei nicht ein
-         * zweites Mal vollständig aufgebaut werden.
-         */
         if (firstResume) {
             firstResume = false;
-
             reloadCodesInBackground();
             return;
         }
 
-        /*
-         * Zuerst wird ohne Verzögerung der vorhandene
-         * Cache angezeigt.
-         */
         showToday();
+        updateStatusPanel();
 
-        TagescodeWidget.updateAllWidgets(
-                this
-        );
+        TagescodeWidget.updateAllWidgets(this);
 
-        /*
-         * Danach wird im Hintergrund geprüft, ob sich
-         * die lokalen Codeliste geändert hat.
-         */
         reloadCodesInBackground();
     }
 
     private void openDatePicker() {
-        CodeCalendarDialog.show(this, CodeRepository.availableDates(this), displayedDate,
-                date -> showDate(date, true));
+        CodeCalendarDialog.show(
+                this,
+                CodeRepository.availableDates(this),
+                displayedDate,
+                date -> showDate(date, true)
+        );
     }
 
     private void showToday() {
-        LocalDate today =
-                LocalDate.now();
-
         showDate(
-                today,
+                LocalDate.now(),
                 false
         );
     }
@@ -305,13 +283,9 @@ public class MainActivity extends Activity {
             LocalDate date,
             boolean manuallySelected
     ) {
-        /*
-         * Diese Abfrage erfolgt direkt aus der Map im
-         * Arbeitsspeicher und benötigt kein erneutes
-         * Lesen der lokalen Codeliste.
-         */
         displayedDate = date;
         manuallySelectedDate = manuallySelected;
+
         String code =
                 CodeRepository.getCodeForDate(
                         this,
@@ -321,9 +295,12 @@ public class MainActivity extends Activity {
                 );
 
         codeView.setText(code);
-        codeLabelView.setText(date.equals(LocalDate.now())
-                ? R.string.code_today_label : R.string.code_selected_label);
-        updateDataStatus();
+
+        codeLabelView.setText(
+                date.equals(LocalDate.now())
+                        ? R.string.code_today_label
+                        : R.string.code_selected_label
+        );
 
         dateView.setText(
                 capitalise(
@@ -331,46 +308,32 @@ public class MainActivity extends Activity {
                 )
         );
 
-        if (!date.equals(LocalDate.now())) {
-            todayButton.setVisibility(
-                    View.VISIBLE
-            );
-
-        } else {
-            todayButton.setVisibility(
-                    View.GONE
-            );
-        }
-
-        otherDateButton.setVisibility(
-                View.VISIBLE
+        todayButton.setVisibility(
+                date.equals(LocalDate.now())
+                        ? View.GONE
+                        : View.VISIBLE
         );
 
+        otherDateButton.setVisibility(View.VISIBLE);
+
         updateAdditionalCodes();
+        updateStatusPanel();
     }
 
     private void updateAdditionalCodes() {
         LocalDate yesterday =
-                LocalDate.now()
-                        .minusDays(1);
-
-        String yesterdayCode =
-                getCode(yesterday);
+                LocalDate.now().minusDays(1);
 
         yesterdayCodeView.setText(
                 getString(
                         R.string.yesterday_code_format,
                         shortDateFormat.format(yesterday),
-                        yesterdayCode
+                        getCode(yesterday)
                 )
         );
 
         LocalDate date2000 =
-                LocalDate.of(
-                        2000,
-                        1,
-                        1
-                );
+                LocalDate.of(2000, 1, 1);
 
         code2000View.setText(
                 getString(
@@ -381,11 +344,7 @@ public class MainActivity extends Activity {
         );
 
         LocalDate date2001 =
-                LocalDate.of(
-                        2001,
-                        1,
-                        1
-                );
+                LocalDate.of(2001, 1, 1);
 
         code2001View.setText(
                 getString(
@@ -396,11 +355,7 @@ public class MainActivity extends Activity {
         );
 
         LocalDate date2006 =
-                LocalDate.of(
-                        2006,
-                        1,
-                        1
-                );
+                LocalDate.of(2006, 1, 1);
 
         code2006View.setText(
                 getString(
@@ -420,29 +375,186 @@ public class MainActivity extends Activity {
         );
     }
 
-    private void updateDataStatus() {
-        checkStatusView.setText(manualCheckPending ? R.string.check_running : R.string.check_failed);
-        checkStatusView.setVisibility(manualCheckPending || CodeRepository.lastCheckFailed(this)
-                ? View.VISIBLE : View.GONE);
-        long importedAt = CodeRepository.lastSuccessfulImport(this);
-        String imported = importedAt == 0 ? getString(R.string.import_unknown)
-                : getString(R.string.last_import_format,
-                    new java.text.SimpleDateFormat("dd.MM.yyyy, HH:mm", Locale.GERMANY)
-                        .format(new java.util.Date(importedAt)));
-        String latest = CodeRepository.latestAvailableDate(this);
-        String available = latest == null ? getString(R.string.no_codes)
-                : getString(R.string.codes_until_format, shortDateFormat.format(LocalDate.parse(latest)));
-        long newCodesAt = CodeRepository.lastNewCodesImport(this);
-        String newCodes = newCodesAt == 0 ? getString(R.string.new_codes_import_unknown)
-                : getString(R.string.new_codes_import_format,
-                    new java.text.SimpleDateFormat("dd.MM.yyyy, HH:mm", Locale.GERMANY)
-                        .format(new java.util.Date(newCodesAt)));
-        boolean missingToday = !CodeRepository.getCodeForToday(this).matches("[0-9]{6}");
-        availabilityView.setText(missingToday
-                ? getString(R.string.missing_today) + "\n" + available : available);
-        availabilityView.setBackgroundColor(missingToday ? 0xFFFFCC00 : android.graphics.Color.TRANSPARENT);
-        availabilityView.setTextColor(missingToday ? android.graphics.Color.BLACK : getColor(R.color.text_primary));
-        dataStatusView.setText(newCodes + "\n" + imported);
+    private void updateStatusPanel() {
+        if (
+                statusDotView == null
+                        || statusTitleView == null
+                        || statusDetailView == null
+        ) {
+            return;
+        }
+
+        int color;
+        String title;
+        String detail;
+
+        boolean hasFile =
+                CloudCodeFileAccess.hasSavedFile(this);
+
+        boolean todayAvailable =
+                CodeRepository
+                        .getCodeForToday(this)
+                        .matches("[0-9]{6}");
+
+        if (manualCheckPending) {
+            color = 0xFFF9A825;
+            title = getString(R.string.status_checking);
+            detail = getString(R.string.status_checking_detail);
+
+        } else if (!hasFile) {
+            color = 0xFFF9A825;
+            title = getString(R.string.status_file_missing);
+            detail = getString(R.string.status_file_missing_detail);
+
+        } else if (CodeRepository.lastCheckFailed(this)) {
+            color = 0xFFC62828;
+            title = getString(R.string.status_error);
+            detail = getString(R.string.status_error_detail);
+
+        } else if (!todayAvailable) {
+            color = 0xFFC62828;
+            title = getString(R.string.status_today_missing);
+            detail = getString(R.string.status_today_missing_detail);
+
+        } else if (CodeRepository.lastSuccessfulImport(this) == 0) {
+            color = 0xFFF9A825;
+            title = getString(R.string.status_not_checked);
+            detail = getString(R.string.status_not_checked_detail);
+
+        } else {
+            color = 0xFF2E7D32;
+            title = getString(R.string.status_ok);
+
+            long checked =
+                    CodeRepository.lastSuccessfulImport(this);
+
+            int imported =
+                    CodeRepository.lastImportCount(this);
+
+            if (imported > 0) {
+                detail = getString(
+                        R.string.status_ok_imported,
+                        formatTimestamp(checked),
+                        imported
+                );
+            } else {
+                detail = getString(
+                        R.string.status_ok_no_import,
+                        formatTimestamp(checked)
+                );
+            }
+        }
+
+        statusDotView.setTextColor(color);
+        statusTitleView.setTextColor(color);
+        statusTitleView.setText(title);
+        statusDetailView.setText(detail);
+    }
+
+    private void showInfoDialog() {
+        String latest =
+                CodeRepository.latestAvailableDate(this);
+
+        String latestText =
+                latest == null
+                        ? getString(R.string.info_not_available)
+                        : shortDateFormat.format(
+                                LocalDate.parse(latest)
+                        );
+
+        String fileName =
+                CloudCodeFileAccess.selectedFileName(this);
+
+        long lastCheck =
+                CodeRepository.lastCheck(this);
+
+        long lastSuccess =
+                CodeRepository.lastSuccessfulImport(this);
+
+        long lastNewCodes =
+                CodeRepository.lastNewCodesImport(this);
+
+        int lastImportCount =
+                CodeRepository.lastImportCount(this);
+
+        StringBuilder message =
+                new StringBuilder();
+
+        message.append(
+                getString(
+                        R.string.info_version,
+                        BuildConfig.VERSION_NAME
+                )
+        );
+
+        message.append("\n")
+                .append(
+                        getString(
+                                R.string.info_build,
+                                BuildConfig.BUILD_DATE
+                        )
+                );
+
+        message.append("\n\n")
+                .append(
+                        getString(
+                                R.string.info_file,
+                                fileName == null
+                                        ? getString(R.string.info_no_file)
+                                        : fileName
+                        )
+                );
+
+        message.append("\n")
+                .append(
+                        getString(
+                                R.string.info_last_check,
+                                formatTimestampOrNever(lastCheck)
+                        )
+                );
+
+        message.append("\n")
+                .append(
+                        getString(
+                                R.string.info_last_success,
+                                formatTimestampOrNever(lastSuccess)
+                        )
+                );
+
+        message.append("\n")
+                .append(
+                        getString(
+                                R.string.info_last_import,
+                                formatTimestampOrNever(lastNewCodes)
+                        )
+                );
+
+        message.append("\n")
+                .append(
+                        getString(
+                                R.string.info_last_import_count,
+                                Math.max(lastImportCount, 0)
+                        )
+                );
+
+        message.append("\n")
+                .append(
+                        getString(
+                                R.string.info_codes_until,
+                                latestText
+                        )
+                );
+
+        message.append("\n\n")
+                .append(getString(R.string.info_watch))
+                .append("\n")
+                .append(GarminTransferStatus.describe(this));
+
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.info_title)
+                .setMessage(message.toString())
+                .setPositiveButton(R.string.close, null)
+                .show();
     }
 
     private void showBuildInformation() {
@@ -472,21 +584,32 @@ public class MainActivity extends Activity {
                 + text.substring(1);
     }
 
+    private String formatTimestamp(long value) {
+        return timestampFormat.format(
+                new Date(value)
+        );
+    }
+
+    private String formatTimestampOrNever(long value) {
+        return value == 0
+                ? getString(R.string.info_never)
+                : formatTimestamp(value);
+    }
+
     private void reloadCodesInBackground() {
         int currentRequest =
-                reloadRequestNumber
-                        .incrementAndGet();
+                reloadRequestNumber.incrementAndGet();
 
         codeExecutor.execute(() -> {
-            /*
-             * Das Einlesen und Analysieren der Datei
-             * erfolgt nicht auf dem UI-Thread.
-             */
             CodeRepository.reload(
                     getApplicationContext()
             );
 
-            int imported = CodeRepository.importCloudCodes(getApplicationContext());
+            int imported =
+                    CodeRepository.importCloudCodes(
+                            getApplicationContext()
+                    );
+
             mainHandler.post(() -> {
                 if (
                         isFinishing()
@@ -495,12 +618,6 @@ public class MainActivity extends Activity {
                     return;
                 }
 
-                /*
-                 * Falls zwischenzeitlich eine neuere
-                 * Aktualisierung angefordert wurde,
-                 * muss diese Anzeige nicht mehr
-                 * aktualisiert werden.
-                 */
                 if (
                         currentRequest
                                 != reloadRequestNumber.get()
@@ -508,23 +625,53 @@ public class MainActivity extends Activity {
                     return;
                 }
 
-                boolean wasManualCheck = manualCheckPending;
-                manualCheckPending = false;
-                if (wasManualCheck && imported == 0) {
-                    Toast.makeText(this, R.string.check_up_to_date, Toast.LENGTH_SHORT).show();
-                }
-                if (imported < 0) {
-                    Toast.makeText(this, "OneDrive-Datei nicht lesbar. Gespeicherte Codes bleiben verfügbar. "
-                            + "Zum erneuten Auswählen unten auf die Version tippen.", Toast.LENGTH_LONG).show();
-                } else if (imported > 0) {
-                    Toast.makeText(this, imported + " neue Tagescodes gespeichert.", Toast.LENGTH_SHORT).show();
-                }
-                showDate(manuallySelectedDate ? displayedDate : LocalDate.now(), manuallySelectedDate);
+                boolean wasManualCheck =
+                        manualCheckPending;
 
-                TagescodeWidget.updateAllWidgets(
-                        this
+                manualCheckPending =
+                        false;
+
+                if (wasManualCheck) {
+                    if (imported < 0) {
+                        Toast.makeText(
+                                this,
+                                R.string.check_failed_toast,
+                                Toast.LENGTH_LONG
+                        ).show();
+
+                    } else if (imported > 0) {
+                        Toast.makeText(
+                                this,
+                                getString(
+                                        R.string.imported_codes_toast,
+                                        imported
+                                ),
+                                Toast.LENGTH_SHORT
+                        ).show();
+
+                    } else {
+                        Toast.makeText(
+                                this,
+                                R.string.check_up_to_date,
+                                Toast.LENGTH_SHORT
+                        ).show();
+                    }
+                }
+
+                showDate(
+                        manuallySelectedDate
+                                ? displayedDate
+                                : LocalDate.now(),
+                        manuallySelectedDate
                 );
-                if (garmin != null) garmin.sync();
+
+                updateStatusPanel();
+
+                TagescodeWidget.updateAllWidgets(this);
+
+                if (garmin != null) {
+                    garmin.sync();
+                }
             });
         });
     }
@@ -541,31 +688,48 @@ public class MainActivity extends Activity {
                 data
         );
 
-        if (requestCode == CloudCodeFileAccess.REQUEST_CLOUD_CODE_FILE) {
+        if (
+                requestCode
+                        == CloudCodeFileAccess
+                        .REQUEST_CLOUD_CODE_FILE
+        ) {
             if (resultCode == RESULT_OK) {
-                if (CloudCodeFileAccess.saveFileAccess(this, data)) {
+                if (
+                        CloudCodeFileAccess
+                                .saveFileAccess(
+                                        this,
+                                        data
+                                )
+                ) {
+                    manualCheckPending = true;
+                    updateStatusPanel();
                     reloadCodesInBackground();
-                } else {
-                    Toast.makeText(this, "Dauerhafter Dateizugriff konnte nicht gespeichert werden.",
-                            Toast.LENGTH_LONG).show();
-                }
-            } else {
-                Toast.makeText(this, "Später auswählen: unten auf die Version tippen.",
-                        Toast.LENGTH_LONG).show();
-            }
-            return;
-        }
 
+                } else {
+                    Toast.makeText(
+                            this,
+                            R.string.file_access_not_saved,
+                            Toast.LENGTH_LONG
+                    ).show();
+                }
+
+            } else {
+                Toast.makeText(
+                        this,
+                        R.string.file_selection_cancelled,
+                        Toast.LENGTH_LONG
+                ).show();
+            }
+        }
     }
 
     @Override
     protected void onDestroy() {
-        /*
-         * Ausstehende Hintergrundaufgaben werden beim
-         * vollständigen Schliessen der Activity beendet.
-         */
         codeExecutor.shutdownNow();
-        if (garmin != null) garmin.close();
+
+        if (garmin != null) {
+            garmin.close();
+        }
 
         super.onDestroy();
     }
