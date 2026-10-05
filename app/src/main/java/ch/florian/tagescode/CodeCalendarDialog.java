@@ -26,6 +26,7 @@ final class CodeCalendarDialog {
     private final LinearLayout calendar;
     private final android.app.Dialog dialog;
     private int monthIndex;
+    private boolean manualInput;
 
     static void show(Context context, AvailableCodeDates dates, LocalDate preferred,
                      Consumer<LocalDate> onSelected) {
@@ -49,7 +50,35 @@ final class CodeCalendarDialog {
         calendar.setOrientation(LinearLayout.VERTICAL);
         int padding = dp(8);
         calendar.setPadding(padding, padding, padding, padding);
-        ScrollView scroll = new ScrollView(context);
+        ScrollView scroll = new ScrollView(context) {
+            private float startX,startY;
+            private boolean horizontal,vertical;
+            @Override public boolean dispatchTouchEvent(android.view.MotionEvent event) {
+                if(manualInput)return super.dispatchTouchEvent(event);
+                int action=event.getActionMasked();
+                if(action==android.view.MotionEvent.ACTION_DOWN){startX=event.getX();startY=event.getY();horizontal=false;vertical=false;}
+                float dx=event.getX()-startX,dy=event.getY()-startY;
+                if(action==android.view.MotionEvent.ACTION_POINTER_DOWN)vertical=true;
+                if(action==android.view.MotionEvent.ACTION_MOVE&&!horizontal&&!vertical){
+                    int slop=android.view.ViewConfiguration.get(context).getScaledTouchSlop();
+                    if(Math.abs(dy)>slop&&Math.abs(dy)>=Math.abs(dx))vertical=true;
+                    else if(Math.abs(dx)>slop&&Math.abs(dx)>Math.abs(dy)*1.5f){
+                        horizontal=true;
+                        android.view.MotionEvent cancel=android.view.MotionEvent.obtain(event);
+                        cancel.setAction(android.view.MotionEvent.ACTION_CANCEL);super.dispatchTouchEvent(cancel);cancel.recycle();
+                    }
+                }
+                if(horizontal){
+                    if(action==android.view.MotionEvent.ACTION_UP){
+                        int next=monthIndex+(dx<0?1:-1);
+                        if(Math.abs(dx)>=dp(48)&&next>=0&&next<dates.months().size()){monthIndex=next;render();scrollTo(0,0);}
+                        horizontal=false;
+                    }else if(action==android.view.MotionEvent.ACTION_CANCEL)horizontal=false;
+                    return true;
+                }
+                return super.dispatchTouchEvent(event);
+            }
+        };
         scroll.addView(calendar);
         dialog = new android.app.Dialog(context);dialog.requestWindowFeature(1);
         LinearLayout shell=new LinearLayout(context);shell.setOrientation(1);shell.setPadding(dp(16),dp(16),dp(16),dp(16));shell.setBackground(background(dark()?0xFF10181E:0xFFFFFFFF,20));
@@ -75,6 +104,7 @@ final class CodeCalendarDialog {
     }
 
     private void render() {
+        manualInput=false;
         calendar.removeAllViews();
         YearMonth month = dates.months().get(monthIndex);
         LinearLayout navigation = new LinearLayout(context);
@@ -146,6 +176,7 @@ final class CodeCalendarDialog {
     }
 
     private void showManualInput() {
+        manualInput=true;
         calendar.removeAllViews();
         TextView label=new TextView(context);label.setText("Datum eingeben (TT.MM.JJJJ)");calendar.addView(label);
         android.widget.EditText input=new android.widget.EditText(context);
