@@ -27,7 +27,7 @@ final class GarminConnection {
     void setStateListener(Runnable listener) { stateListener = listener; }
     boolean busy() { return sending || starting; }
     private final Runnable timeout = () -> {
-        if (sending) finish(false, "ÃƒÅ“bertragung nicht bestÃƒÂ¤tigt. Uhr verbinden und erneut versuchen.");
+        if (sending) finish(false, "Übertragung nicht bestätigt. Uhr verbinden und erneut versuchen.");
     };
 
     GarminConnection(Activity activity) {
@@ -54,7 +54,7 @@ final class GarminConnection {
 
     void showMenu() {
         new AlertDialog.Builder(activity).setTitle("Garmin Tagescode")
-            .setItems(new String[]{"Codes jetzt ÃƒÂ¼bertragen", "Uhr auswÃƒÂ¤hlen", "Verbindung deaktivieren"},
+            .setItems(new String[]{"Codes jetzt übertragen", "Uhr auswählen", "Verbindung deaktivieren"},
                 (dialog, item) -> {
                     if (item == 2) {
                         preferences.edit().remove("device").apply();
@@ -88,7 +88,7 @@ final class GarminConnection {
                 public void onInitializeError(ConnectIQ.IQSdkErrorStatus status) { ui(() -> {
                     if (currentSession != session) return;
                     starting = false; ready = false; stateListener.run();
-                    if (chooseWhenReady || manualSend) toast("Garmin Connect installieren bzw. ÃƒÂ¶ffnen und die Uhr dort verbinden.");
+                    if (chooseWhenReady || manualSend) toast("Garmin Connect installieren bzw. öffnen und die Uhr dort verbinden.");
                     chooseWhenReady = false; manualSend = false;
                 }); }
                 public void onSdkShutDown() { ui(() -> {
@@ -97,7 +97,7 @@ final class GarminConnection {
             });
         } catch (RuntimeException exception) {
             starting = false; stateListener.run();
-            if (chooseWhenReady || manualSend) toast("Garmin Connect ist momentan nicht verfÃƒÂ¼gbar.");
+            if (chooseWhenReady || manualSend) toast("Garmin Connect ist momentan nicht verfügbar.");
             chooseWhenReady = false; manualSend = false;
         }
     }
@@ -110,7 +110,7 @@ final class GarminConnection {
             }
             String[] names = new String[devices.size()];
             for (int i = 0; i < devices.size(); i++) names[i] = devices.get(i).getFriendlyName();
-            new AlertDialog.Builder(activity).setTitle("Uhr auswÃƒÂ¤hlen")
+            new AlertDialog.Builder(activity).setTitle("Uhr auswählen")
                 .setItems(names, (dialog, index) -> {
                     handler.removeCallbacks(timeout);
                     attempt++; sending = false; pending = false;
@@ -118,7 +118,7 @@ final class GarminConnection {
                     GarminBackgroundJob.ensureScheduled(activity);
                     findSelected(); send(true);
                 }).setNegativeButton("Abbrechen", null).show();
-        } catch (Exception exception) { toast("Uhren konnten nicht geladen werden. Garmin Connect ÃƒÂ¶ffnen."); }
+        } catch (Exception exception) { toast("Uhren konnten nicht geladen werden. Garmin Connect öffnen."); }
     }
 
     private void findSelected() {
@@ -143,12 +143,12 @@ final class GarminConnection {
         manualSend |= manual;
         if (sending) { pending = true; return; }
         if (!ready || selected == null) {
-            if (manualSend) toast("Uhr nicht verfÃƒÂ¼gbar. Bitte Uhr auswÃƒÂ¤hlen.");
+            if (manualSend) toast("Uhr nicht verfügbar. Bitte Uhr auswählen.");
             manualSend = false; stateListener.run(); return;
         }
         try {
             if (sdk.getDeviceStatus(selected) != IQDevice.IQDeviceStatus.CONNECTED) {
-                if (manualSend) toast("Uhr nicht verbunden. Garmin Connect ÃƒÂ¶ffnen und erneut versuchen.");
+                if (manualSend) toast("Uhr nicht verbunden. Garmin Connect öffnen und erneut versuchen.");
                 manualSend = false; stateListener.run(); return;
             }
             sending = true; stateListener.run();
@@ -167,19 +167,19 @@ final class GarminConnection {
                             (device, sentApp, status) -> ui(() -> {
                                 if (sending && currentAttempt == attempt) finish(
                                     status == ConnectIQ.IQMessageStatus.SUCCESS,
-                                    "ÃƒÅ“bertragung fehlgeschlagen. Uhr verbinden und erneut versuchen.");
+                                    "Übertragung fehlgeschlagen. Uhr verbinden und erneut versuchen.");
                             }));
-                    } catch (Exception exception) { finish(false, "Garmin-ÃƒÅ“bertragung nicht mÃƒÂ¶glich."); }
+                    } catch (Exception exception) { finish(false, "Garmin-Übertragung nicht möglich."); }
                 }); }
             });
-        } catch (Exception exception) { finish(false, "Garmin Connect ist momentan nicht verfÃƒÂ¼gbar."); }
+        } catch (Exception exception) { finish(false, "Garmin Connect ist momentan nicht verfügbar."); }
     }
 
     private void finish(boolean success, String error) {
         handler.removeCallbacks(timeout);
         sending = false; stateListener.run();
         if (success) preferences.edit().putLong("last_background_transfer", System.currentTimeMillis()).apply();
-        if (manualSend) toast(success ? "Codes ÃƒÂ¼bertragen. Tagescode auf der Uhr ÃƒÂ¶ffnen." : error);
+        if (manualSend) toast(success ? "Codes übertragen. Tagescode auf der Uhr öffnen." : error);
         manualSend = false;
         boolean again = pending; pending = false;
         if (success && again) sync();
