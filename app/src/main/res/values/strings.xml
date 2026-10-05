@@ -18,30 +18,62 @@
     <string name="select_date_clean">Datum auswählen</string>
 
     <string name="developed_by">Videojet Schweiz · FGR</string>
+    <string name="swiss_badge_description">Schweizerflagge</string>
 
-<string name="swiss_badge_description">
-    Schweizerflagge
-</string>
-
-<string name="build_info_format">
-    Version %1$s · %2$s
-</string>
+    <string name="build_info_format">Version %1$s · %2$s</string>
 
     <string name="code_today_label">Heutiger Tagescode</string>
     <string name="code_selected_label">Ausgewählter Tagescode</string>
     <string name="code_copied">Tagescode kopiert</string>
     <string name="no_code_to_copy">Für dieses Datum ist kein Code verfügbar.</string>
-    <string name="import_unknown">Noch keine erfolgreiche Prüfung erfasst</string>
-    <string name="last_import_format">Zuletzt geprüft: %1$s</string>
-    <string name="codes_until_format">Codes verfügbar bis: %1$s</string>
-    <string name="no_codes">Keine Tagescodes verfügbar</string>
-    <string name="new_codes_import_format">Neue Codes importiert: %1$s</string>
-    <string name="new_codes_import_unknown">Neue Codes importiert: noch nicht erfasst</string>
+
     <string name="reference_codes">Referenzcodes</string>
-    <string name="missing_today">Für heute fehlt ein Tagescode</string>
-    <string name="check_running">Datei wird geprüft …</string>
-    <string name="check_failed">Prüfung fehlgeschlagen – gespeicherte Codes werden verwendet.</string>
+
+    <string name="button_watch">Uhr</string>
+    <string name="button_check">Prüfen</string>
+    <string name="button_file">TXT</string>
+    <string name="button_info">Info</string>
+
+    <string name="status_ok">Alles i.O.</string>
+    <string name="status_ok_no_import">Geprüft: %1$s · keine neuen Codes</string>
+    <string name="status_ok_imported">Geprüft: %1$s · %2$d neue Codes</string>
+    <string name="status_checking">Daten werden geprüft …</string>
+    <string name="status_checking_detail">Tagescodes.txt wird gelesen und mit den gespeicherten Codes verglichen.</string>
+    <string name="status_file_missing">TXT-Datei auswählen</string>
+    <string name="status_file_missing_detail">Es ist noch keine Tagescodes.txt verbunden.</string>
+    <string name="status_error">Prüfung fehlgeschlagen</string>
+    <string name="status_error_detail">Die TXT-Datei konnte nicht gelesen oder importiert werden.</string>
+    <string name="status_today_missing">Tagescode fehlt</string>
+    <string name="status_today_missing_detail">Für heute ist kein gültiger Tagescode gespeichert.</string>
+    <string name="status_not_checked">Prüfung erforderlich</string>
+    <string name="status_not_checked_detail">Die Daten wurden noch nicht erfolgreich geprüft.</string>
+
+    <string name="select_cloud_file_hint">Bitte Tagescodes.txt aus OneDrive auswählen.</string>
+    <string name="no_file_picker">Kein Dateiauswahldialog verfügbar.</string>
+    <string name="file_access_not_saved">Dauerhafter Dateizugriff konnte nicht gespeichert werden.</string>
+    <string name="file_selection_cancelled">Dateiauswahl abgebrochen.</string>
+    <string name="garmin_not_ready">Garmin-Verbindung wird gerade vorbereitet.</string>
+
     <string name="check_up_to_date">Prüfung erfolgreich. Keine neuen Codes vorhanden.</string>
+    <string name="check_failed_toast">TXT-Datei konnte nicht gelesen werden. Gespeicherte Codes bleiben verfügbar.</string>
+    <string name="imported_codes_toast">%1$d neue Tagescodes importiert.</string>
+
+    <string name="info_title">Tagescode – Information</string>
+    <string name="info_version">Version: %1$s</string>
+    <string name="info_build">Build: %1$s</string>
+    <string name="info_file">TXT-Datei: %1$s</string>
+    <string name="info_no_file">nicht ausgewählt</string>
+    <string name="info_last_check">Letzte Prüfung: %1$s</string>
+    <string name="info_last_success">Letzte erfolgreiche Prüfung: %1$s</string>
+    <string name="info_last_import">Letzter Import neuer Codes: %1$s</string>
+    <string name="info_last_import_count">Beim letzten Import: %1$d neue Codes</string>
+    <string name="info_codes_until">Codes verfügbar bis: %1$s</string>
+    <string name="info_watch">Garmin-Uhr</string>
+    <string name="info_never">noch nie</string>
+    <string name="info_not_available">nicht verfügbar</string>
+    <string name="close">Schliessen</string>
+
     <string name="widget_compact_name">Tagescode kompakt</string>
     <string name="widget_compact_description">Nur der Tagescode, transparent mit dunkelgrauer Schrift für helle Hintergründe</string>
+
 </resources>
