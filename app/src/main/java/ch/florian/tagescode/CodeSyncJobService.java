@@ -15,7 +15,15 @@ public class CodeSyncJobService extends JobService {
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
     private Future<?> pending;
 
+    static void ensureScheduled(Context context) {
+        JobScheduler scheduler=context.getSystemService(JobScheduler.class);
+        if(scheduler!=null && scheduler.getPendingJob(2004)==null)
+            scheduler.schedule(new JobInfo.Builder(2004,new ComponentName(context,CodeSyncJobService.class))
+                .setPeriodic(30*60*1000L).setPersisted(true).build());
+    }
+
     static void enqueue(Context context) {
+        ensureScheduled(context);
         JobScheduler scheduler = context.getSystemService(JobScheduler.class);
         if (scheduler != null) {
             scheduler.schedule(new JobInfo.Builder(2003,
@@ -31,7 +39,15 @@ public class CodeSyncJobService extends JobService {
             boolean retry = false;
             try {
                 CodeRepository.reload(getApplicationContext());
-                retry = CodeRepository.importCloudCodes(getApplicationContext()) < 0;
+                // Always refresh offline widgets before potentially slow provider I/O.
+                TagescodeWidget.updateAllWidgets(getApplicationContext());
+                Context context=getApplicationContext();
+                long last=context.getSharedPreferences("code_import_status",0).getLong("last_attempt",0);
+                java.time.LocalDate today=java.time.LocalDate.now();
+                boolean missing=!CodeRepository.getCodeForDate(context,today.getYear(),today.getMonthValue()-1,today.getDayOfMonth()).matches("[0-9]{6}")
+                    || !CodeRepository.availableDates(context).contains(today.plusDays(1));
+                if(CloudCodeFileAccess.hasSavedFile(context) && (parameters.getJobId()!=2004 || SyncPolicy.due(java.time.LocalDateTime.now(),System.currentTimeMillis()-last,missing,CodeRepository.lastCheckFailed(context))))
+                    retry = CodeRepository.importCloudCodes(context) < 0;
                 TagescodeWidget.updateAllWidgets(getApplicationContext());
             } finally {
                 if (!Thread.currentThread().isInterrupted()) jobFinished(parameters, retry);

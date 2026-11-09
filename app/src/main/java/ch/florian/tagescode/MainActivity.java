@@ -127,7 +127,8 @@ public class MainActivity extends Activity {
          */
         showToday();
 
-        StartupScreen.show(this, this::requestCloudFileAccessIfNeeded);
+        CodeSyncJobService.ensureScheduled(this);
+        requestCloudFileAccessIfNeeded();
     }
 
     private void bindViews() {

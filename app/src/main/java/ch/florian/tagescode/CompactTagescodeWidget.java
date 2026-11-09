@@ -25,5 +25,6 @@ public final class CompactTagescodeWidget extends TagescodeWidget {
         views.setOnClickPendingIntent(R.id.widgetRoot, PendingIntent.getActivity(context, 0, open,
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE));
         manager.updateAppWidget(ids, views);
+        context.getSharedPreferences("code_import_status",0).edit().putLong("widget_updated",System.currentTimeMillis()).apply();
     }
 }

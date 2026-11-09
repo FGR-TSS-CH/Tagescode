@@ -37,6 +37,7 @@ public class DailyWidgetUpdateReceiver
     public static void scheduleNextUpdate(
             Context context
     ) {
+        CodeSyncJobService.ensureScheduled(context);
         AlarmManager alarmManager =
                 (AlarmManager)
                         context.getSystemService(

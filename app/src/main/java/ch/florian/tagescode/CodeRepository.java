@@ -16,6 +16,7 @@ import java.util.TreeMap;
 
 final class CodeRepository {
     private static final Object LOCK = new Object();
+    private static final Object IMPORT_LOCK = new Object();
     private static volatile Map<String, String> cachedCodes;
 
     private CodeRepository() { }
@@ -67,7 +68,7 @@ final class CodeRepository {
     static int importCloudCodes(Context context) { return importCloudCodes(context, () -> {}); }
     static int importCloudCodes(Context context, Runnable importing) {
         CloudCodeFileAccess.cacheDisplayName(context);
-        synchronized (LOCK) {
+        synchronized (IMPORT_LOCK) {
             String failure = "Datei konnte nicht gelesen werden";
             context.getSharedPreferences("code_import_status", 0).edit().putLong("last_attempt", System.currentTimeMillis()).apply();
             try {
@@ -84,7 +85,7 @@ final class CodeRepository {
                         .edit().putLong("last_success", System.currentTimeMillis())
                         .putBoolean("last_failed", false).putString("last_error", "").putInt("last_added", added).apply();
                 return added;
-            } catch (IOException | SecurityException exception) {
+            } catch (IOException | RuntimeException exception) {
                 context.getSharedPreferences("code_import_status", Context.MODE_PRIVATE)
                         .edit().putBoolean("last_failed", true).putString("last_error", failure).apply();
                 return -1;

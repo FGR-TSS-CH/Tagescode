@@ -72,6 +72,9 @@ final class CloudCodeFileAccess {
         String value = preferences(context).getString(KEY_URI, null);
         if (value == null) return null;
         try {
+            // Best effort: providers are allowed not to support refresh.
+            try { context.getContentResolver().refresh(Uri.parse(value), null, null); }
+            catch (RuntimeException ignored) { }
             InputStream input = context.getContentResolver().openInputStream(Uri.parse(value));
             if (input == null) throw new IOException("Dateianbieter nicht verfügbar");
             return input;
