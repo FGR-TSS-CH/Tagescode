@@ -79,6 +79,16 @@ public class DailyWidgetUpdateReceiver
                 0
         );
 
+        // Monday delivery window: wake for each ten-minute slot, including 08:00.
+        java.time.ZonedDateTime now=java.time.ZonedDateTime.now();
+        java.time.ZonedDateTime candidate=now.toLocalDate().atTime(6,0).atZone(now.getZone());
+        if(now.getDayOfWeek()==java.time.DayOfWeek.MONDAY){
+            while(!candidate.isAfter(now))candidate=candidate.plusMinutes(10);
+            if(!candidate.toLocalTime().isAfter(java.time.LocalTime.of(8,0))
+                    && candidate.toLocalDate().equals(now.toLocalDate()))
+                nextUpdate.setTimeInMillis(candidate.toInstant().toEpochMilli());
+        }
+
         Intent updateIntent =
                 new Intent(
                         context,
